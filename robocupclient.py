@@ -3,23 +3,33 @@ import multiprocessing
 from time import sleep
 
 
-def send_command(command):
-    udp_ip = "localhost"
-    udp_port = 6000
-    sock = socket.socket(socket.AF_INET,  # Internet
-                         socket.SOCK_DGRAM)  # UDP
+class Client:
 
-    # Send command to server
-    sock.sendto(command.encode(), (udp_ip, udp_port))
+    def __init__(self):
+        self.udp_ip = "localhost"
+        self.udp_port = 6000
+        self.sock = socket.socket(socket.AF_INET,  # Internet
+                                  socket.SOCK_DGRAM)  # UDP
 
-    # Sleep 10 secs and disconnect
-    sleep(10)
+    def train(self):
+        # Initialize client (init [TeamName])
+        command = "(init Team1)"
+
+        # Send command to server
+        self.sock.sendto(command.encode(), (self.udp_ip, self.udp_port))
+
+        command = "(move 10 10)"
+        self.sock.sendto(command.encode(), (self.udp_ip, self.udp_port))
+
+        sleep(10)
+
+        command = "(bye)"
+        self.sock.sendto(command.encode(), (self.udp_ip, self.udp_port))
 
 
-# (init [TeamName])
-initialize_team = "(init Team1)"
-
-# Create 11 processes each of them connecting to the server and initializing
-for i in range(0, 11):
-    process = multiprocessing.Process(target=send_command, args=(initialize_team, ))
-    process.start()
+if __name__ == "__main__":
+    # Create 11 processes each of them connecting to the server and initializing
+    for i in range(0, 11):
+        client = Client()
+        process = multiprocessing.Process(target=client.train, args=())
+        process.start()

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import subprocess
 import multiprocessing
@@ -25,8 +24,8 @@ class RunServerMonitor:
             ubuntuRunTerm = subprocess.Popen(ubuntuCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         if 'MacOS' in out:
-            macOSCommandrs = 'osascript -e 'tell app "Terminal" to do script "rcssserver"'' 
-            macOSCommandrm = 'osascript -e 'tell app "Terminal" to do script "rcssmonitor"'' 
+            macOSCommandrs = "osascript -e 'tell app ""Terminal"" to do script ""rcssserver"""'" 
+            macOSCommandrm = "osascript -e 'tell app ""Terminal"" to do script ""rcssmonitor""'" 
             macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)            macOSCommandrs = 'osascript -e 'tell app "Terminal" to do script "rcssserver"'' 
             macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)        
 

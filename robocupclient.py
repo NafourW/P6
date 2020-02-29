@@ -11,6 +11,7 @@ class RunServerMonitor:
         unixDetection = 'uname -a'
         p = subprocess.Popen(unixDetection, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out = p.communicate()[0]
+
         if 'Mint' in out:
             mintCommandrm = 'mate-terminal -e "rcssmonitor"'
             mintCommandrs = 'mate-terminal -e "rcssserver"'
@@ -18,15 +19,16 @@ class RunServerMonitor:
             mintRunTerm = subprocess.Popen(mintCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         if 'Ubuntu' in out:
+            # otherwise gnome-terminal is the issued terminal for ubuntu 
             ubuntuCommandrm = 'mate-terminal -e "rcssmonitor"'            
-            ubuntuCommandrs = 'mate-terminal -e "rcssserver"' # otherwise gnome-terminal
+            ubuntuCommandrs = 'mate-terminal -e "rcssserver"' 
             ubuntuRunTerm = subprocess.Popen(ubuntuCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             ubuntuRunTerm = subprocess.Popen(ubuntuCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-        if 'MacOS' in out:
-            macOSCommandrs = "osascript -e 'tell app ""Terminal"" to do script ""rcssserver"""'" 
-            macOSCommandrm = "osascript -e 'tell app ""Terminal"" to do script ""rcssmonitor""'" 
-            macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)            macOSCommandrs = 'osascript -e 'tell app "Terminal" to do script "rcssserver"'' 
+        if 'Darwin' in out:
+            macOSCommandrs = """ osascript -e 'tell app "Terminal" to do script "rcssserver"' """
+            macOSCommandrm = """ osascript -e 'tell app "Terminal" to do script "rcssmonitor"' """
+            macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
             macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)        
 
 class Client:

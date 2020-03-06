@@ -36,7 +36,7 @@ class RunServerMonitor:
             
 
         if 'Darwin'.encode() in out:
-            macOSCommandrs = """ osascript -e 'tell app "Terminal" to do script "rcssserver"' """
+            macOSCommandrs = """ osascript -e 'tell app "Terminal" to do script "/usr/local/bin/rcssserver --server::port=6000"' """
             macOSCommandrm = """ osascript -e 'tell app "Terminal" to do script "rcssmonitor"' """
             macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
             macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)        

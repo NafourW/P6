@@ -12,6 +12,7 @@ class RunServerMonitor:
 
         os.chdir(os.path.dirname(__file__))
         pathToFile = os.getcwd()
+        pathToLogs = pathToFile + "/logs"
         
         unixDetection = 'uname -a'
         p = subprocess.Popen(unixDetection, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -33,17 +34,25 @@ class RunServerMonitor:
             except KeyboardInterrupt as e:
                 sys.exit('Failed to start %r, reason %s' % (ubuntuCommandrs, e))
                 sys.exit('Failed to start %r, reason %s' % (ubuntuCommandrm, e))
-            
+
 
         if 'Darwin'.encode() in out:
-            macOSCommandrs = """ osascript -e 'tell app "Terminal" to do script "/usr/local/bin/rcssserver --server::port=6000"' """
+
+            macOSCommandcd = "osascript -e" + "'tell app " + '"Terminal" ' + "to do script " + '"cd ' + pathToLogs + " ; "+ "rcssserver --server::port=6000" + '"' + "' "
+
+            #macOSCommandrs = """ osascript -e 'tell app "Terminal" to do script "rcssserver --server::port=6000"' """
+
             macOSCommandrm = """ osascript -e 'tell app "Terminal" to do script "rcssmonitor"' """
-            macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
+
+            macOStermcd = subprocess.Popen(macOSCommandcd,  shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            #macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            
             macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)        
     
     def readLogFile(self):
 
-        with open('incomplete.rcg') as f:
+        with open("logs/incomplete.rcg") as f:
             while True:
                 line = f.readline()
                 if line:

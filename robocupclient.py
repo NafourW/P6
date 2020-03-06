@@ -47,16 +47,19 @@ class RunServerMonitor:
             macOStermcd = subprocess.Popen(macOSCommandcd,  shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             #macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            
+
             macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)        
     
     def readLogFile(self):
 
-        with open("logs/incomplete.rcg") as f:
+        with open("logs/incomplete.rcg") as file:
+
             while True:
-                line = f.readline()
+                line = file.readline()
                 if line:
                     print(line)
+            
+
 
 
 class Client:

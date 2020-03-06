@@ -58,8 +58,9 @@ class RunServerMonitor:
                 line = file.readline()
                 if line:
                     print(line)
-            
 
+                if not os.path.exists("logs/incomplete.rcg"):
+                    break
 
 
 class Client:

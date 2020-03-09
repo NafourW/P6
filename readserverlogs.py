@@ -6,12 +6,11 @@ import sys
 import os
 from time import sleep
 
-
 class ReadWriteLogFiles:
 
     def readLogFile(self):
-        writeFile = open('gameLog.rcg', 'w') # File to write to "new log"
-        with open('incomplete.rcg', 'r') as fd: # Readom from this file for realtime logging
+        writeFile = open('gameLog.rcg', 'w')
+        with open('incomplete.rcg', 'r') as fd:
             while True:
                 logData = fd.readline()
                 if logData:
@@ -19,19 +18,23 @@ class ReadWriteLogFiles:
                     writeFile.write(logData)
 
 
+
 class RunServerMonitor:
 
+    def exitProperly():
+        sys.exit(0)
+
     def runShells(self):
+
         os.chdir(os.path.dirname(__file__))
         pathToFile = os.getcwd()
-        pathToLogs = pathToFile + "/logs"
         
         unixDetection = 'uname -a'
         p = subprocess.Popen(unixDetection, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out = p.communicate()[0]
 
         if 'Mint'.encode() in out:
-            mintCommandrs = 'mate-terminal -e "/rcssserver --server::port=6000"'
+            mintCommandrs = 'mate-terminal -e ' + pathToFile + '"/rcssserver --server::port=6000"'
             mintCommandrm = 'mate-terminal -e "rcssmonitor"'
             mintRunTerm = subprocess.Popen(mintCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             mintRunTerm = subprocess.Popen(mintCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -43,20 +46,18 @@ class RunServerMonitor:
                 ubuntuCommandrm = 'mate-terminal -e "rcssmonitor"'            
                 ubuntuRunTermrm = subprocess.Popen(ubuntuCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 ubuntuRunTermrs = subprocess.Popen(ubuntuCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
             except KeyboardInterrupt as e:
                 sys.exit('Failed to start %r, reason %s' % (ubuntuCommandrs, e))
                 sys.exit('Failed to start %r, reason %s' % (ubuntuCommandrm, e))
+            
 
-
-        if 'Darwin'.encode() in out:       
-            try:
-                macOSCommandcd = "osascript -e" + "'tell app " + '"Terminal" ' + "to do script " + '"cd ' + pathToLogs + " ; "+ "rcssserver --server::port=6000" + '"' + "' "
-                macOSCommandrm = """ osascript -e 'tell app "Terminal" to do script "rcssmonitor"' """
-                macOStermcd = subprocess.Popen(macOSCommandcd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)       
-            except KeyboardInterrupt as e:
-                sys.exit('Failed to start %r, reason %s' % (macOStermrs, e))
-                sys.exit('Failed to start %r, reason %s' % (macOStermrm, e))
+        if 'Darwin'.encode() in out:
+            macOSCommandrs = """ osascript -e 'tell app "Terminal" to do script "rcssserver"' """
+            macOSCommandrm = """ osascript -e 'tell app "Terminal" to do script "rcssmonitor"' """
+            macOStermrs = subprocess.Popen(macOSCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
+            macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)        
+    
 
 
 
@@ -96,17 +97,18 @@ if __name__ == "__main__":
 
     rwlf.readLogFile()
 
+
     # Create 11 processes each of them connecting to the server and initializing
     # for i in range(0, 11):
     #     client = Client()
     #     client.startme()
     #     client.train("(init TEAM1)")
     #     client.train("(move 10 10)")
-        #client.sendCommandToRcsserver("(move 10 11)")
-        #process = multiprocessing.Process(target=client.train, args=())
-        #process.start()
+    #     #client.sendCommandToRcsserver("(move 10 11)")
+    #     #process = multiprocessing.Process(target=client.train, args=())
+    #     #process.start()
     # while True: 
     #     cmdToSend = input()
     #     client.train("(move (p 'TEAM1' 10)10 "+str(cmdToSend)+")")
         
-
+   

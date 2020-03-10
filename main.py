@@ -13,4 +13,4 @@ if __name__ == "__main__":
 
     sleep(5) # wait for network to setup
 
-    rwlf.readLogFile()
+    rwlf.multiThreadRWFiles()

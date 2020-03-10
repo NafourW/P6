@@ -1,3 +1,5 @@
+from multiprocessing import Process
+from threading import Thread
 import subprocess
 import socket
 import sys
@@ -6,13 +8,30 @@ import os
 
 class ReadWriteLogFiles:
 
-    def readLogFile(self):
+    def multiThreadRWFiles(self):
+        Thread(target = self.readLogFileRCL).start()
+        Thread(target = self.readLogFileRCG).start()
+        
+
+    def readLogFileRCG(self):
         writeFile = open('logs/gameLog.rcg', 'w') # File to write to "new log"
         with open('logs/incomplete.rcg', 'r') as fd: # Readom from this file for realtime logging
             while True:
                 logData = fd.readline()
                 if logData:
                     writeFile.write(logData)
+                    print(logData)
+
+    def readLogFileRCL(self):
+        writeFile = open('logs/gameLog.rcl', 'w') # File to write to "new log"
+        with open('logs/incomplete.rcl', 'r') as fd: # Readom from this file for realtime logging
+            while True:
+                logData = fd.readline()
+                if logData:
+                    writeFile.write(logData)
+                    #print(logData)
+
+
 
 
 class RunServerMonitor:
@@ -34,7 +53,7 @@ class RunServerMonitor:
         if 'Ubuntu'.encode() in out:
             try:
                 # otherwise gnome-terminal is the issued terminal for ubuntu 
-                ubuntuCommandrs = 'mate-terminal -e "/usr/local/bin/rcssserver --server::port=6000"'
+                ubuntuCommandrs = 'cd logs ; mate-terminal -e "rcssserver --server::port=6000"'
                 ubuntuCommandrm = 'mate-terminal -e "rcssmonitor"'            
                 ubuntuRunTermrm = subprocess.Popen(ubuntuCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 ubuntuRunTermrs = subprocess.Popen(ubuntuCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

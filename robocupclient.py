@@ -1,28 +1,23 @@
-
 import subprocess
-import multiprocessing
 import socket
 import sys
 import os
-from time import sleep
 
 
 class ReadWriteLogFiles:
 
     def readLogFile(self):
-        writeFile = open('gameLog.rcg', 'w') # File to write to "new log"
-        with open('incomplete.rcg', 'r') as fd: # Readom from this file for realtime logging
+        writeFile = open('logs/gameLog.rcg', 'w') # File to write to "new log"
+        with open('logs/incomplete.rcg', 'r') as fd: # Readom from this file for realtime logging
             while True:
                 logData = fd.readline()
                 if logData:
-                    #print(logData)
                     writeFile.write(logData)
 
 
 class RunServerMonitor:
 
     def runShells(self):
-        os.chdir(os.path.dirname(__file__))
         pathToFile = os.getcwd()
         pathToLogs = pathToFile + "/logs"
         
@@ -44,20 +39,18 @@ class RunServerMonitor:
                 ubuntuRunTermrm = subprocess.Popen(ubuntuCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 ubuntuRunTermrs = subprocess.Popen(ubuntuCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             except KeyboardInterrupt as e:
-                sys.exit('Failed to start %r, reason %s' % (ubuntuCommandrs, e))
-                sys.exit('Failed to start %r, reason %s' % (ubuntuCommandrm, e))
+                sys.exit('Failed to start %r, reason %s' % (ubuntuRunTermrm, e))
+                sys.exit('Failed to start %r, reason %s' % (ubuntuRunTermrs, e))
 
-
-        if 'Darwin'.encode() in out:       
+        if 'Darwin'.encode() in out:
             try:
                 macOSCommandcd = "osascript -e" + "'tell app " + '"Terminal" ' + "to do script " + '"cd ' + pathToLogs + " ; "+ "rcssserver --server::port=6000" + '"' + "' "
                 macOSCommandrm = """ osascript -e 'tell app "Terminal" to do script "rcssmonitor"' """
                 macOStermcd = subprocess.Popen(macOSCommandcd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 macOStermrm = subprocess.Popen(macOSCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)       
             except KeyboardInterrupt as e:
-                sys.exit('Failed to start %r, reason %s' % (macOStermrs, e))
+                sys.exit('Failed to start %r, reason %s' % (macOStermcd, e))
                 sys.exit('Failed to start %r, reason %s' % (macOStermrm, e))
-
 
 
 class Client:
@@ -69,44 +62,6 @@ class Client:
                                   socket.SOCK_DGRAM)  # UDP
 
     def train(self, command):
-        # Initialize client (init [TeamName])
-        #command = "(init Team1)"
 
         # Send command to server
         self.sock.sendto(command.encode(), (self.udp_ip, self.udp_port))
-
-        #command = "(move 10 10)"
-        #self.sock.sendto(command.encode(), (self.udp_ip, self.udp_port))
-        
-        #sleep(10)
-
-        #command = "(bye)"
-        #self.sock.sendto(command.encode(), (self.udp_ip, self.udp_port))
-
-
-if __name__ == "__main__":
-
-    # Run shells
-    rsm = RunServerMonitor()
-    rwlf = ReadWriteLogFiles()
-
-    rsm.runShells()
-
-    sleep(3) # wait for network to setup
-
-    rwlf.readLogFile()
-
-    # Create 11 processes each of them connecting to the server and initializing
-    # for i in range(0, 11):
-    #     client = Client()
-    #     client.startme()
-    #     client.train("(init TEAM1)")
-    #     client.train("(move 10 10)")
-        #client.sendCommandToRcsserver("(move 10 11)")
-        #process = multiprocessing.Process(target=client.train, args=())
-        #process.start()
-    # while True: 
-    #     cmdToSend = input()
-    #     client.train("(move (p 'TEAM1' 10)10 "+str(cmdToSend)+")")
-        
-

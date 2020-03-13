@@ -1,11 +1,13 @@
-from pyparsing import Word, Combine, Literal, ZeroOrMore, Group, Optional, Suppress, OneOrMore, SkipTo, nums, alphanums, restOfLine, empty
+from pyparsing import Word, Combine, Literal, ZeroOrMore, Group, Optional, Suppress, OneOrMore, SkipTo, nums, alphanums, restOfLine, alphas
+
 
 class rclParsing:
     
     def strParsing(self):
-        #General
-        integer  = Word(nums)            # simple unsigned integer
-        realNumber = Combine(ZeroOrMore(Word("-", max = 1)) + integer + Optional('.' + integer))
+        # General
+        irrelevant = restOfLine
+        integer = Word(nums)  # simple unsigned integer
+        realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer))
         space = " "
         lp = Literal("(").suppress()
         rp = Literal(")").suppress()
@@ -13,13 +15,14 @@ class rclParsing:
         cycle = integer
         time = Group(frame + Suppress(",") + cycle)
         receive = "Recv"
+        coach = "Coach"
         parameterContent = Combine(ZeroOrMore(Word(alphanums) | space))
         parameter = OneOrMore(lp + parameterContent + rp)
 
         # initialization
         initialize = "init"
         teamName = Word(alphanums)
-        playerName = Group(teamName + Suppress("_") + integer)
+        playerName = Group(teamName + Suppress("_") + (integer | Literal(coach)))
         goalieIndicator = lp + "goalie" + rp
         initCommand = lp + initialize + teamName + parameter + ZeroOrMore(goalieIndicator) + rp
         initialization = time + receive + playerName + Suppress(":") + initCommand
@@ -40,19 +43,29 @@ class rclParsing:
         turn_neck = Group("turn_neck" + realNumber)
         change_view = Group("change_view" + (Literal("wide") | Literal("narrow") | Literal("normal")))
         attentionto = Group("attentionto" + (Group(Literal("our") + integer) | Group(Literal("off"))))
-        say = Group(Literal("say") + Suppress('"') + SkipTo(Suppress('"'), include=True))
+        say = Group("say" + Suppress('"') + SkipTo(Suppress('"'), include=True))
         bye = Group("bye")
 
-        actCommand_keyword = move | dash | turn | turn_neck | change_view | attentionto | say | bye
-        actCommand = OneOrMore(lp + actCommand_keyword + rp)
+        # coach action
+        change_player_type = Group("change_player_type" + integer + integer)
+        say_coach_freeform = Group(
+            "say" + lp + Group("freeform" + Suppress('"') + SkipTo(Suppress('"'), include=True)) + rp)
+        player_mark = Group(lp + "mark" + Group(Suppress("{") + integer + Suppress("}")) + rp)
+        player_info = ZeroOrMore(Group(lp + (Literal("dont") | Literal("do")) + "our" + Group(
+            Suppress("{") + integer + Suppress("}")) + player_mark + rp))
+        coach_info_content = Group(integer + Group(lp + Word(alphas) + rp) + player_info)
+        say_coach_info = Group("say " + lp + Group("info" + lp + coach_info_content + rp) + rp)
+        eye_on = Group(Literal("eye on"))
+
+        act_player = move | dash | turn | turn_neck | change_view | attentionto | say | bye
+        act_coach = change_player_type | say_coach_freeform | say_coach_info | eye_on
+        actCommand = OneOrMore(lp + (act_player | act_coach) + rp)
         action = time + receive + playerName + Suppress(":") + actCommand
 
-        irrelevant = restOfLine
-        command = initialization | action | message | empty | irrelevant
-        line_test = command
-        
+        command = initialization | action | message
+        line = command
 
-        return line_test.parseString(self)
+        return line.parseString(self)
 
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
 #test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''

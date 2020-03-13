@@ -1,37 +1,7 @@
-from threading import Thread
 import subprocess
 import socket
 import sys
 import os
-
-
-class ReadWriteLogFiles:
-
-    def multiThreadRWFiles(self):
-        Thread(target = self.readLogFileRCL).start()
-        Thread(target = self.readLogFileRCG).start()
-        
-
-    def readLogFileRCG(self):
-        writeFile = open('logs/gameLog.rcg', 'w') # File to write to "new log"
-        with open('logs/incomplete.rcg', 'r') as fd: # Readom from this file for realtime logging
-            while True:
-                logData = fd.readline()
-                if logData:
-                    writeFile.write(logData)
-                    print(logData)
-
-    def readLogFileRCL(self):
-        writeFile = open('logs/gameLog.rcl', 'w') # File to write to "new log"
-        with open('logs/incomplete.rcl', 'r') as fd: # Readom from this file for realtime logging
-            while True:
-                logData = fd.readline()
-                if logData:
-                    writeFile.write(logData)
-                    #print(logData)
-
-
-
 
 class RunServerMonitor:
 
@@ -44,23 +14,23 @@ class RunServerMonitor:
         out = p.communicate()[0]
 
         if 'Mint'.encode() in out:
-            mintCommandrs = 'mate-terminal -e "/rcssserver --server::port=6000"'
+            mintCommandrs = 'cd logs ; mate-terminal -e "rcssserver --server::port=6000"'
             mintCommandrm = 'mate-terminal -e "rcssmonitor"'
             mintRunTerm = subprocess.Popen(mintCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            mintRunTerm = subprocess.Popen(mintCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            mintRunTers = subprocess.Popen(mintCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-        if 'Ubuntu'.encode() in out:
+        elif 'Ubuntu'.encode() in out:
             try:
                 # otherwise gnome-terminal is the issued terminal for ubuntu 
-                ubuntuCommandrs = 'cd logs ; mate-terminal -e "rcssserver --server::port=6000"'
-                ubuntuCommandrm = 'mate-terminal -e "rcssmonitor"'            
+                ubuntuCommandrs = 'cd logs ; gnome-terminal -e "rcssserver --server::port=6000"'
+                ubuntuCommandrm = 'gnome-terminal -e "rcssmonitor"'            
                 ubuntuRunTermrm = subprocess.Popen(ubuntuCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 ubuntuRunTermrs = subprocess.Popen(ubuntuCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             except KeyboardInterrupt as e:
                 sys.exit('Failed to start %r, reason %s' % (ubuntuRunTermrm, e))
                 sys.exit('Failed to start %r, reason %s' % (ubuntuRunTermrs, e))
 
-        if 'Darwin'.encode() in out:
+        elif 'Darwin'.encode() in out:
             try:
                 macOSCommandcd = "osascript -e" + "'tell app " + '"Terminal" ' + "to do script " + '"cd ' + pathToLogs + " ; "+ "rcssserver --server::port=6000" + '"' + "' "
                 macOSCommandrm = """ osascript -e 'tell app "Terminal" to do script "rcssmonitor"' """
@@ -69,7 +39,8 @@ class RunServerMonitor:
             except KeyboardInterrupt as e:
                 sys.exit('Failed to start %r, reason %s' % (macOStermcd, e))
                 sys.exit('Failed to start %r, reason %s' % (macOStermrm, e))
-
+        else:
+            print("OS not supported.")
 
 class Client:
 

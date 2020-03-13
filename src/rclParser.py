@@ -1,7 +1,5 @@
 from pyparsing import Word, Combine, Literal, ZeroOrMore, Group, Optional, Suppress, OneOrMore, SkipTo, nums, alphanums, restOfLine, alphas
 
-
-
 class rclParsing:
     
     def strParsing(self):
@@ -62,8 +60,10 @@ class rclParsing:
         act_coach = change_player_type | say_coach_freeform | say_coach_info | eye_on
         actCommand = OneOrMore(lp + (act_player | act_coach) + rp)
 
-        synch_see = Group(lp + "synch_see" + rp) + Group(lp + parameterContent + Group(lp + parameterContent + rp) + rp)
-        setupCommand = synch_see
+        synch_see = Group(lp + "synch_see" + rp) + OneOrMore(Group(lp + parameterContent + Group(lp + parameterContent + rp) + rp))
+
+        team_graphic = Group(lp + "team_graphic" + Group(lp + SkipTo(rp, include=True) + rp))
+        setupCommand = synch_see | team_graphic
         action = time + receive + playerName + Suppress(":") + (actCommand | setupCommand)
 
         command = initialization | action | message
@@ -71,6 +71,7 @@ class rclParsing:
 
         return line.parseString(self)
 
+#print(rclParsing.strParsing('''0,92	Recv Fractals2019_Coach: (team_graphic (31 7 "8 8 3 1" ". c #555555" "X c #AAAAAA" "o c white" "oXXXoooo" ".ooooooo" "XXoooooo" "oX.ooooo" "oXXXoooo" "oooooooo" "oooooooo" "oooooooo"))'''))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
 #test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
 #test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''

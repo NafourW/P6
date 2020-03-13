@@ -3,3 +3,6 @@
 
 # IDE settings
 /.idea
+
+# RoboCup Log files
+logs/*

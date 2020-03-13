@@ -14,10 +14,14 @@ class RunServerMonitor:
         out = p.communicate()[0]
 
         if 'Mint'.encode() in out:
-            mintCommandrs = 'cd logs ; mate-terminal -e "rcssserver --server::port=6000"'
-            mintCommandrm = 'mate-terminal -e "rcssmonitor"'
-            mintRunTerm = subprocess.Popen(mintCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            mintRunTers = subprocess.Popen(mintCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            try:
+                mintCommandrs = 'cd logs ; mate-terminal -e "rcssserver --server::port=6000"'
+                mintCommandrm = 'mate-terminal -e "rcssmonitor"'
+                mintRunTerm = subprocess.Popen(mintCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                mintRunTers = subprocess.Popen(mintCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            except KeyboardInterrupt as e:
+                sys.exit('Failed to start %r, reason %s' % (mintRunTerm, e))
+                sys.exit('Failed to start %r, reason %s' % (mintRunTers, e))
 
         elif 'Ubuntu'.encode() in out:
             try:

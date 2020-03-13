@@ -9,7 +9,7 @@ if __name__ == "__main__":
     #rsm = RunServerMonitor()
     #rwlf = ReadWriteLogFiles()
 
-    #rsm.runShells()
+    #rsm().runShells()
 
     sleep(5) # wait for network to setup
 

@@ -1,6 +1,7 @@
 from pyparsing import Word, Combine, Literal, ZeroOrMore, Group, Optional, Suppress, OneOrMore, SkipTo, nums, alphanums, restOfLine, alphas
 
 
+
 class rclParsing:
     
     def strParsing(self):
@@ -60,7 +61,10 @@ class rclParsing:
         act_player = move | dash | turn | turn_neck | change_view | attentionto | say | bye
         act_coach = change_player_type | say_coach_freeform | say_coach_info | eye_on
         actCommand = OneOrMore(lp + (act_player | act_coach) + rp)
-        action = time + receive + playerName + Suppress(":") + actCommand
+
+        synch_see = Group(lp + "synch_see" + rp) + Group(lp + parameterContent + Group(lp + parameterContent + rp) + rp)
+        setupCommand = synch_see
+        action = time + receive + playerName + Suppress(":") + (actCommand | setupCommand)
 
         command = initialization | action | message
         line = command

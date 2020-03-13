@@ -36,8 +36,13 @@ class rclParsing:
         message = time + lp + "referee" + messageKeyword + rp
 
         # action
+        kick = Group("kick" + realNumber + realNumber)
+        long_kick = Group("long_kick" + realNumber + realNumber)
+        goalieCatch = ("goalieCatch" + realNumber)
+        pointto = Group("pointto" + realNumber + realNumber)
+        tackle = Group("tackle" + realNumber + Optional((Literal("on") | Literal("off"))))
         move = Group("move" + realNumber + realNumber)
-        dash = Group("dash" + realNumber)
+        dash = Group("dash" + realNumber + Optional(realNumber))
         turn = Group("turn" + realNumber)
         turn_neck = Group("turn_neck" + realNumber)
         change_view = Group("change_view" + (Literal("wide") | Literal("narrow") | Literal("normal")))
@@ -49,14 +54,14 @@ class rclParsing:
         change_player_type = Group("change_player_type" + integer + integer)
         say_coach_freeform = Group(
             "say" + lp + Group("freeform" + Suppress('"') + SkipTo(Suppress('"'), include=True)) + rp)
-        player_mark = Group(lp + "mark" + Group(Suppress("{") + integer + Suppress("}")) + rp)
+        player_mark = Group(lp + Word(alphas) + Group(Suppress("{") + integer + Suppress("}")) + rp)
         player_info = ZeroOrMore(Group(lp + (Literal("dont") | Literal("do")) + "our" + Group(
             Suppress("{") + integer + Suppress("}")) + player_mark + rp))
         coach_info_content = Group(integer + Group(lp + Word(alphas) + rp) + player_info)
         say_coach_info = Group("say " + lp + Group("info" + lp + coach_info_content + rp) + rp)
         eye_on = Group(Literal("eye on"))
 
-        act_player = move | dash | turn | turn_neck | change_view | attentionto | say | bye
+        act_player = kick | long_kick | goalieCatch | pointto | tackle | move | dash | turn | turn_neck | change_view | attentionto | say | bye
         act_coach = change_player_type | say_coach_freeform | say_coach_info | eye_on
         actCommand = OneOrMore(lp + (act_player | act_coach) + rp)
 
@@ -71,7 +76,7 @@ class rclParsing:
 
         return line.parseString(self)
 
-#print(rclParsing.strParsing('''0,92	Recv Fractals2019_Coach: (team_graphic (31 7 "8 8 3 1" ". c #555555" "X c #AAAAAA" "o c white" "oXXXoooo" ".ooooooo" "XXoooooo" "oX.ooooo" "oXXXoooo" "oooooooo" "oooooooo" "oooooooo"))'''))
+#print(rclParsing.strParsing('''2012,0	Recv Fractals2019_7: (tackle -90 on)(turn_neck -48)'''))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
 #test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
 #test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''

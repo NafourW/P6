@@ -5,7 +5,7 @@ class ReadWriteLogFiles:
 
     def multiThreadRWFiles(self):
         Thread(target = self.readLogFileRCL).start()
-        #Thread(target = self.readLogFileRCG).start()
+        Thread(target = self.readLogFileRCG).start()
         
 
     def readLogFileRCG(self):
@@ -15,11 +15,11 @@ class ReadWriteLogFiles:
                 logData = fd.readline()
                 if logData:
                     writeFile.write(logData)
-                    print(logData)
+                    #print(logData)
 
     def readLogFileRCL(self):
-        writeFile = open('gameLog.rcl', 'w') # File to write to "new log"
-        with open('/home/plebsbench/Downloads/20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcl', 'r') as fd: # Readom from this file for realtime logging
+        writeFile = open('logs/gameLog.rcl', 'w') # File to write to "new log"
+        with open('logs/incomplete.rcl', 'r') as fd: # Readom from this file for realtime logging
             while True:
                 logData = fd.readline()
                 if logData:

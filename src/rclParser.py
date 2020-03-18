@@ -49,6 +49,7 @@ class rclParsing:
         penalty_taken = Group("penalty_taken" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_miss = Group("penalty_miss" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_score = Group("penalty_score" + Suppress("_") + (Literal('l') | Literal('r')))
+        foul = Group("foul" + Suppress("_") + (Literal('l') | Literal('r')))
         foul_charge = Group("foul_charge" + Suppress("_") + (Literal('l') | Literal('r')))
         foul_push = Group("foul_push" + Suppress("_") + (Literal('l') | Literal('r')))
         foul_multiple_attack = Group("foul_multiple_attack" + Suppress("_") + (Literal('l') | Literal('r')))
@@ -61,7 +62,7 @@ class rclParsing:
         time_up = Group("time_up")
         time_over = Group("time_over")
         human_judge = Group("human_judge")
-        messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | time_extended | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
+        messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | time_extended | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | foul | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
         message = time + lp + "referee" + messageKeyword + rp
 
 

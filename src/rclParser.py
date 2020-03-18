@@ -37,6 +37,7 @@ class rclParsing:
         corner_kick = Group("corner_kick" + Suppress("_") + (Literal('l') | Literal('r')))
         half_time = Group("half_time")
         first_half_over = Group("first_half_over")
+        time_extended = Group("time_extended")
         goal = Group("goal" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)
         goal_kick = Group("goal_kick" + Suppress("_") + (Literal('l') | Literal('r')))
         goalie_catch_ball = Group("goalie_catch_ball" + Suppress("_") + (Literal('l') | Literal('r')))
@@ -60,7 +61,7 @@ class rclParsing:
         time_up = Group("time_up")
         time_over = Group("time_over")
         human_judge = Group("human_judge")
-        messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
+        messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | time_extended | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
         message = time + lp + "referee" + messageKeyword + rp
 
 
@@ -106,7 +107,7 @@ class rclParsing:
 
         return line.parseString(self)
 
-#print(rclParsing.strParsing('''2012,0	Recv Fractals2019_7: (tackle -90 on)(turn_neck -48)'''))
+print(rclParsing.strParsing('''7000,0	(referee time_extended)'''))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
 #test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
 #test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''

@@ -5,7 +5,7 @@ class rclParsing:
     def strParsing(self):
         # General
         integer = Word(nums)  # simple unsigned integer
-        realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer + Optional(Literal('e-') + integer)))
+        realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer + Optional(((Literal('e-')) ^ (Literal('e+'))) + integer)))
         space = " "
         lp = Literal("(").suppress()
         rp = Literal(")").suppress()
@@ -65,7 +65,6 @@ class rclParsing:
         messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | time_extended | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | foul | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
         message = time + lp + "referee" + messageKeyword + rp
 
-
         # action
         kick = Group("kick" + realNumber + realNumber)
         long_kick = Group("long_kick" + realNumber + realNumber)
@@ -107,19 +106,3 @@ class rclParsing:
         line = command
 
         return line.parseString(self)
-
-#print(rclParsing.strParsing('''163,0    Recv CYRUS2019_9: (kick 0.891 -4.83169e-13)(turn_neck -65)'''))
-#print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
-#test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
-#test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''
-#test_action4 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)(attentionto our 11)'''
-#Trash test strings
-#test_initialize = "0,32	Recv Fractals2019_1: (init Fractals2019 (version 15) (goalie))"
-#test_message = "95,0	(referee play_on)"
-#test_message2 = "7685,51	(referee kick_off_r)"
-#test_message3 = "7685,0	(referee goal_l_1)"
-
-#variable = Word(alphas, max=1)   # single letter variable, such as x, z, m, etc.
-#arithOp  = Word("+-*/", max=1)   # arithmetic operators
-#equation = variable + "=" + integer + arithOp + integer    # will match "x=2+2", etc
-#test = "x = 2 * 5"

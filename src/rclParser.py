@@ -5,7 +5,7 @@ class rclParsing:
     def strParsing(self):
         # General
         integer = Word(nums)  # simple unsigned integer
-        realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer))
+        realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer + Optional(Literal('e-') + integer)))
         space = " "
         lp = Literal("(").suppress()
         rp = Literal(")").suppress()
@@ -108,7 +108,7 @@ class rclParsing:
 
         return line.parseString(self)
 
-print(rclParsing.strParsing('''7000,0	(referee time_extended)'''))
+#print(rclParsing.strParsing('''163,0    Recv CYRUS2019_9: (kick 0.891 -4.83169e-13)(turn_neck -65)'''))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
 #test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
 #test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''

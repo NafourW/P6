@@ -1,7 +1,6 @@
-from pyparsing import Word, Combine, Literal, ZeroOrMore, Group, Optional, Suppress, OneOrMore, SkipTo, nums, alphanums, restOfLine, alphas
+from pyparsing import *
 
 class rclParsing:
-    
     def strParsing(self):
         # General
         integer = Word(nums)  # simple unsigned integer
@@ -43,12 +42,15 @@ class rclParsing:
         goalie_catch_ball = Group("goalie_catch_ball" + Suppress("_") + (Literal('l') | Literal('r')))
         catch_fault = Group("catch_fault" + Suppress("_") + (Literal('l') | Literal('r')))
         offside = Group("offside" + Suppress("_") + (Literal('l') | Literal('r')))
+        penalty_onfield = Group("penalty_onfield" + Suppress("_") + (Literal('l') | Literal('r')))
+        penalty_foul = Group("penalty_foul" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_kick = Group("penalty_kick" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_setup = Group("penalty_setup" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_ready = Group("penalty_ready" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_taken = Group("penalty_taken" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_miss = Group("penalty_miss" + Suppress("_") + (Literal('l') | Literal('r')))
         penalty_score = Group("penalty_score" + Suppress("_") + (Literal('l') | Literal('r')))
+        penalty_winner = Group("penalty_winner" + Suppress("_") + (Literal('l') | Literal('r')))
         foul = Group("foul" + Suppress("_") + (Literal('l') | Literal('r')))
         foul_charge = Group("foul_charge" + Suppress("_") + (Literal('l') | Literal('r')))
         foul_push = Group("foul_push" + Suppress("_") + (Literal('l') | Literal('r')))
@@ -62,7 +64,7 @@ class rclParsing:
         time_up = Group("time_up")
         time_over = Group("time_over")
         human_judge = Group("human_judge")
-        messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | time_extended | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | foul | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
+        messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | time_extended | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_onfield | penalty_foul | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | penalty_winner | foul | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
         message = time + lp + "referee" + messageKeyword + rp
 
         # action
@@ -83,8 +85,7 @@ class rclParsing:
 
         # coach action
         change_player_type = Group("change_player_type" + integer + integer)
-        say_coach_freeform = Group(
-            "say" + lp + Group("freeform" + Suppress('"') + SkipTo(Suppress('"'), include=True)) + rp)
+        say_coach_freeform = Group("say" + lp + Group("freeform" + Suppress('"') + SkipTo(Suppress('"'), include=True)) + rp)
         player_htype = Group(lp + Word(alphas) + realNumber + rp)
         player_mark = Group(lp + Word(alphas) + Group(Suppress("{") + integer + Suppress("}")) + rp)
         player_info = ZeroOrMore(Group(lp + (Literal("dont") | Literal("do")) + Word(alphas) + Group(Suppress("{") + integer + Suppress("}")) + (player_htype | player_mark) + rp))
@@ -98,7 +99,7 @@ class rclParsing:
 
         synch_see = Group(lp + "synch_see" + rp) + OneOrMore(Group(lp + parameterContent + Group(lp + parameterContent + rp) + rp))
 
-        team_graphic = Group(lp + "team_graphic" + Group(lp + SkipTo(rp, include=True) + rp))
+        team_graphic = Group(lp + "team_graphic" + lp + Group(SkipTo(lineEnd)))
         setupCommand = synch_see | team_graphic
         action = time + receive + playerName + Suppress(":") + (actCommand | setupCommand)
 
@@ -106,3 +107,19 @@ class rclParsing:
         line = command
 
         return line.parseString(self)
+
+#print(rclParsing.strParsing('''8000,0	(referee penalty_setup_r)'''))
+#print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
+#test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
+#test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''
+#test_action4 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)(attentionto our 11)'''
+#Trash test strings
+#test_initialize = "0,32	Recv Fractals2019_1: (init Fractals2019 (version 15) (goalie))"
+#test_message = "95,0	(referee play_on)"
+#test_message2 = "7685,51	(referee kick_off_r)"
+#test_message3 = "7685,0	(referee goal_l_1)"
+
+#variable = Word(alphas, max=1)   # single letter variable, such as x, z, m, etc.
+#arithOp  = Word("+-*/", max=1)   # arithmetic operators
+#equation = variable + "=" + integer + arithOp + integer    # will match "x=2+2", etc
+#test = "x = 2 * 5"

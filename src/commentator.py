@@ -6,7 +6,7 @@ class Commentator:
         self.readWriteFiles = readWriteFilesObject
 
     def commentate(self):
-        parsed_line_list = self.readWriteFiles.get_rclParseStr()
+        parsed_line_list = self.readWriteFiles.get_rcl_parsed_strings()
         if len(parsed_line_list) != 0: 
             for parsed_line in parsed_line_list:
                 if "CYRUS2018_1" in parsed_line:

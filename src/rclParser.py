@@ -103,7 +103,8 @@ class rclParsing:
         setupCommand = synch_see | team_graphic
         action = time + receive + playerName + Suppress(":") + (actCommand | setupCommand)
 
-        line = initialization | action | message
+        command = initialization | action | message
+        line = command
 
         return line.parseString(rcl_string)
 
@@ -111,3 +112,16 @@ class rclParsing:
 # rcl_Parser = rclParsing()
 # print(rcl_Parser.strParsing("8000,0	(referee penalty_setup_r)"))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
+#test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
+#test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''
+#test_action4 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)(attentionto our 11)'''
+#Trash test strings
+#test_initialize = "0,32	Recv Fractals2019_1: (init Fractals2019 (version 15) (goalie))"
+#test_message = "95,0	(referee play_on)"
+#test_message2 = "7685,51	(referee kick_off_r)"
+#test_message3 = "7685,0	(referee goal_l_1)"
+
+#variable = Word(alphas, max=1)   # single letter variable, such as x, z, m, etc.
+#arithOp  = Word("+-*/", max=1)   # arithmetic operators
+#equation = variable + "=" + integer + arithOp + integer    # will match "x=2+2", etc
+#test = "x = 2 * 5"

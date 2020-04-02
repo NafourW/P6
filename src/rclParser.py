@@ -1,7 +1,7 @@
 from pyparsing import *
 
 class rclParsing:
-    def strParsing(self):
+    def strParsing(self, rcl_string):
         # General
         integer = Word(nums)  # simple unsigned integer
         realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer + Optional(((Literal('e-')) ^ (Literal('e+'))) + integer)))
@@ -106,9 +106,11 @@ class rclParsing:
         command = initialization | action | message
         line = command
 
-        return line.parseString(self)
+        return line.parseString(rcl_string)
 
-#print(rclParsing.strParsing('''8000,0	(referee penalty_setup_r)'''))
+
+# rcl_Parser = rclParsing()
+# print(rcl_Parser.strParsing("8000,0	(referee penalty_setup_r)"))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
 #test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
 #test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''

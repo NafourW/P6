@@ -1,16 +1,20 @@
-from readWirteFiles import ReadWriteLogFiles as rwlf
+from readWriteFiles import ReadWriteLogFiles as rwlf
 from robocupclient import RunServerMonitor as rsm
+from commentator import Commentator
 from time import sleep
 
 
 if __name__ == "__main__":
 
     # Run shells
-    #rsm = RunServerMonitor()
-    #rwlf = ReadWriteLogFiles()
-
-    rsm().runShells()
+    rsm = rsm()
+    rsm.runShells()
 
     sleep(5) # wait for network to setup
 
-    rwlf().multiThreadRWFiles()
+    rwlf = rwlf()
+    rwlf.multiThreadRWFiles()
+    
+    commentator = Commentator(rwlf)
+    while True:
+        commentator.commentate()

@@ -2,7 +2,7 @@ from pyparsing import *
 
 
 def parsefile_from_rule(rule):
-    with open("logfiles/test.rcg", "r") as file:
+    with open("logfiles/20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcg", "r") as file:
         counter = 0
         line = file.readline() 
         while line:
@@ -66,12 +66,21 @@ additional = left_p + Literal("c") + Word(nums + "-.") * 11 + right_p
 
 player = left_p + player_number + ZeroOrMore(player_position) + view_mode + stamina + ZeroOrMore(flag) + additional + right_p
 
-# End game - (msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")
-end_game = Word("msg ") + Word(nums) * 2 + Word("\"", max=1) + Word("(", max=1) + Word("result") + Word(nums) + Word(alphanums + "_-") + Word(")", max=1) + Word("\"", max=1) 
+# Start of game
+start = Word("ULG5")
+server_param = "server_param " + SkipTo(lineEnd)
+player_param = "player_param " + SkipTo(lineEnd)
+player_type = "player_type " + SkipTo(lineEnd)
 
-frame_line1 =  show_frame + ball + (player * 11)
+# End game - (msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")
+end_game = "msg " + SkipTo(lineEnd)
+
+# Frame lines
+frame_line1 = show_frame + ball + (player * 11)
 frame_line2 = (player * 11)
-read_line = left_p + ((frame_line1 + frame_line2) ^ play_mode ^ team_score ^ end_game) + right_p
+
+read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ end_game ^ ((frame_line1 + frame_line2) ^ play_mode ^ team_score) + right_p))
 
 parsefile_from_rule(read_line)
 print("Done parsing file.")
+

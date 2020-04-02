@@ -7,7 +7,7 @@ class RunServerMonitor:
 
     def runShells(self):
         pathToFile = os.getcwd()
-        pathToLogs = pathToFile + "/logs"
+        pathToLogs = pathToFile + "/logsfiles"
         
         unixDetection = 'uname -a'
         p = subprocess.Popen(unixDetection, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -15,7 +15,7 @@ class RunServerMonitor:
 
         if 'Mint'.encode() in out:
             try:
-                mintCommandrs = 'cd logs ; mate-terminal -e "rcssserver --server::port=6000"'
+                mintCommandrs = 'cd logfiles ; mate-terminal -e "rcssserver --server::port=6000"'
                 mintCommandrm = 'mate-terminal -e "rcssmonitor"'
                 mintRunTerm = subprocess.Popen(mintCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 mintRunTers = subprocess.Popen(mintCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -26,7 +26,7 @@ class RunServerMonitor:
         elif 'Ubuntu'.encode() in out:
             try:
                 # otherwise gnome-terminal is the issued terminal for ubuntu 
-                ubuntuCommandrs = 'cd logs ; gnome-terminal -e "rcssserver --server::port=6000"'
+                ubuntuCommandrs = 'cd logfiles ; gnome-terminal -e "rcssserver --server::port=6000"'
                 ubuntuCommandrm = 'gnome-terminal -e "rcssmonitor"'            
                 ubuntuRunTermrm = subprocess.Popen(ubuntuCommandrm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 ubuntuRunTermrs = subprocess.Popen(ubuntuCommandrs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

@@ -40,7 +40,7 @@ class ReadWriteLogFiles:
                         break
     
     def get_rcl_parsed_strings(self):
-        return self.rcl_parsed_strings;
+        return self.rcl_parsed_strings
 
     def clear_parsed_strings(self):
         self.rcl_parsed_strings = []

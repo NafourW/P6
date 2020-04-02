@@ -154,3 +154,4 @@ read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ end_g
 parsefile_from_rule(read_line)
 print("Done parsing file.")
 
+"""

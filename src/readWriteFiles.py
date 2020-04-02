@@ -1,6 +1,7 @@
 from threading import Thread
 from rclParser import rclParsing
 from rcgParser import rcgParsing
+from pyparsing import ParseException
 import os
 
 class ReadWriteLogFiles:
@@ -29,7 +30,7 @@ class ReadWriteLogFiles:
                 line = file.readline()
         
             print("Lines parsed: " + str(counter))
-            error_line = line if line else "No errors while parsing rcl file"
+            error_line = line if line else "No errors while parsing rcg file"
             print(error_line) 
 
 

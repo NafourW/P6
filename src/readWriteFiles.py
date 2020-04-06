@@ -14,7 +14,7 @@ class ReadWriteLogFiles:
         
 
     def readLogFileRCG(self):
-        with open("logfiles/test.rcg", "r") as file:
+        with open("logfiles/incomplete.rcg", "r") as file:
             counter = 0
             line = file.readline()
             rcgParser = rcgParsing()
@@ -35,7 +35,7 @@ class ReadWriteLogFiles:
 
 
     def readLogFileRCL(self):
-        with open("logfiles/test.rcl", "r") as file:
+        with open("logfiles/incomplete.rcl", "r") as file:
             counter = 0
             line = file.readline()
             rclParser = rclParsing()

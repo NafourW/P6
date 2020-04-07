@@ -1,6 +1,30 @@
 from pyparsing import Word, Combine, ZeroOrMore, Optional, Literal, Suppress, Group, alphanums, OneOrMore, nums, SkipTo, alphas, lineEnd
 
 class rclParsing:
+    def get_initialization_info(self, line):
+        # General
+        integer = Word(nums)  # simple unsigned integer
+        space = " "
+        lp = Literal("(").suppress()
+        rp = Literal(")").suppress()
+        frame = integer
+        cycle = integer
+        time = Group(frame + Suppress(",") + cycle)
+        receive = "Recv"
+        coach = "Coach"
+        parameterContent = Combine(ZeroOrMore(Word(alphanums) | space))
+        parameter = OneOrMore(lp + parameterContent + rp)
+
+        # initialization
+        initialize = "init"
+        teamName = Word(alphanums)
+        playerName = Group(teamName + Suppress("_") + (integer | Literal(coach)))
+        goalieIndicator = lp + "goalie" + rp
+        initCommand = lp + initialize + teamName + parameter + ZeroOrMore(goalieIndicator) + rp
+        initialization = time + receive + playerName + Suppress(":") + initCommand
+
+        return initialization.parseString(line)
+
     def strParsing(self, rcl_string):
         # General
         integer = Word(nums)  # simple unsigned integer

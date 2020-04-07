@@ -1,4 +1,4 @@
-from time import sleep
+from rclParser import rclParsing
 
 class Commentator:
     line_count = 0
@@ -6,9 +6,9 @@ class Commentator:
 
     def __init__(self, readWriteFilesObject):
         self.readWriteFiles = readWriteFilesObject
+        self.rclParsing = rclParsing()
 
     def commentate(self):
-
         # Check is required so we do not read the same lines
         if self.readWriteFiles.get_is_read() != True:
 
@@ -21,6 +21,8 @@ class Commentator:
                         self.line_count += 1
 
                         if "init" in parsed_line:
-                            print("Line: " + str(self.line_count))
-                            self.counter += 1
-                            print("Initialized: " + str(self.counter))
+                            line = self.rclParsing.get_initialization_info(parsed_line)
+                            team_name = line[2][0]
+                            player_number = line[2][1]
+
+                            print("Player " + player_number + " from team " + team_name + " has connected!")

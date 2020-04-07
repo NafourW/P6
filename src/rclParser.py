@@ -3,25 +3,22 @@ from pyparsing import Word, Combine, ZeroOrMore, Optional, Literal, Suppress, Gr
 class rclParsing:
     def get_initialization_info(self, line):
         # General
-        integer = Word(nums)  # simple unsigned integer
-        space = " "
+        integer = Word(nums)
+        realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer + Optional(((Literal('e-')) ^ (Literal('e+'))) + integer)))
         lp = Literal("(").suppress()
         rp = Literal(")").suppress()
-        frame = integer
-        cycle = integer
-        time = Group(frame + Suppress(",") + cycle)
-        receive = "Recv"
+        time = Group(integer + Suppress(",") + integer)
         coach = "Coach"
-        parameterContent = Combine(ZeroOrMore(Word(alphanums) | space))
+        parameterContent = Combine(ZeroOrMore(Word(alphanums) | " "))
         parameter = OneOrMore(lp + parameterContent + rp)
 
         # initialization
-        initialize = "init"
-        teamName = Word(alphanums)
-        playerName = Group(teamName + Suppress("_") + (integer | Literal(coach)))
+        teamName = Combine(Word(alphanums) + Optional("_" + Word(alphanums)))
+        #playerName needs to be taken care of in AST, as teams with '_' in their names causes confusions
+        playerName = Group(Word(alphanums) + Suppress("_") + (integer | Literal(coach)) + Optional(Suppress("_") + (integer | Literal(coach))))
         goalieIndicator = lp + "goalie" + rp
-        initCommand = lp + initialize + teamName + parameter + ZeroOrMore(goalieIndicator) + rp
-        initialization = time + receive + playerName + Suppress(":") + initCommand
+        initCommand = lp + "init" + teamName + parameter + ZeroOrMore(goalieIndicator) + rp
+        initialization = time + "Recv" + playerName + Suppress(":") + initCommand
 
         return initialization.parseString(line)
 
@@ -125,7 +122,7 @@ class rclParsing:
 
         team_graphic = Group(lp + "team_graphic" + lp + Group(SkipTo(lineEnd)))
         setupCommand = synch_see | team_graphic
-        action = time + receive + playerName + Suppress(":") + (actCommand | setupCommand)
+        action = time + "Recv" + playerName + Suppress(":") + (actCommand | setupCommand)
 
         command = initialization | action | message
         line = command
@@ -136,16 +133,3 @@ class rclParsing:
 # rcl_Parser = rclParsing()
 # print(rcl_Parser.strParsing("8000,0	(referee penalty_setup_r)"))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
-#test_action2 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)'''
-#test_action3 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)'''
-#test_action4 = '''1,0	Recv HELIOS2019_2: (dash 68.304)(turn_neck -83)(change_view normal)(attentionto our 11)'''
-#Trash test strings
-#test_initialize = "0,32	Recv Fractals2019_1: (init Fractals2019 (version 15) (goalie))"
-#test_message = "95,0	(referee play_on)"
-#test_message2 = "7685,51	(referee kick_off_r)"
-#test_message3 = "7685,0	(referee goal_l_1)"
-
-#variable = Word(alphas, max=1)   # single letter variable, such as x, z, m, etc.
-#arithOp  = Word("+-*/", max=1)   # arithmetic operators
-#equation = variable + "=" + integer + arithOp + integer    # will match "x=2+2", etc
-#test = "x = 2 * 5"

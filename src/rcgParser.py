@@ -1,4 +1,4 @@
-from pyparsing import *
+from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums
 
 class rcgParsing:
     def strParsing(self, rcg_string):
@@ -21,9 +21,8 @@ class rcgParsing:
         # Player information
         player_number = left_p + (Word("r") ^ Word("l")) + Word(nums) + right_p
 
-        # Player positions TODO (Frame 92 in test.rcg, player 11, left has 10 position values)
-        player_pos1 = player_pos2 = player_pos3 = player_pos4 = player_pos5 = player_pos6 = player_pos7 = player_pos8 = Word(alphanums + "-.")
-        player_position = player_pos1
+        # Player positions
+        player_position = Word(alphanums + "-.")
 
         # Player view mode - H for high and L for low
         view_mode = left_p + Literal("v") + (Word("h") ^ Word("l")) + Word(nums) + right_p

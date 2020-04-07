@@ -4,5 +4,5 @@
 # IDE settings
 /.idea
 
-# RoboCup Log files
-logs/*
+/.vscode
+/src/__pycache__

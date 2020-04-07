@@ -7,6 +7,7 @@ import os
 class ReadWriteLogFiles:
     rcg_parsed_strings = []
     rcl_parsed_strings = []
+    is_read = False
 
     def multiThreadRWFiles(self):
         Thread(target = self.readLogFileRCL).start()
@@ -22,7 +23,7 @@ class ReadWriteLogFiles:
                 counter += 1
                 try:
                     rcgParser.strParsing(line)
-                    #self.rcl_parsed_strings.append(line)  requires change to "rcg_parsed_strings" instead
+                    self.rcg_parsed_strings.append(line)
                 except ParseException as e:
                     print(e)
                     break
@@ -43,6 +44,13 @@ class ReadWriteLogFiles:
                 counter += 1
                 try:
                     rclParser.strParsing(line)
+
+                    # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
+                    if self.is_read == True and len(self.rcl_parsed_strings) > 100:
+                        print("Cleared")
+                        self.clear_parsed_strings()
+                        self.is_read = False
+                    
                     self.rcl_parsed_strings.append(line)
                 except ParseException as e:
                     print(e)
@@ -56,10 +64,16 @@ class ReadWriteLogFiles:
 
 
     def get_rcl_parsed_strings(self):
-        return self.rcl_parsed_strings
+        parsed_strings = self.rcl_parsed_strings
+        self.is_read = True
+        return parsed_strings
 
     def clear_parsed_strings(self):
         self.rcl_parsed_strings = []
     
-    
+    def get_is_read(self):
+        return self.is_read
+
+    def get_length(self):
+        return len(self.rcl_parsed_strings)
 

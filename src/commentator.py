@@ -26,3 +26,11 @@ class Commentator:
                             player_number = line[2][1]
 
                             print("Player " + player_number + " from team " + team_name + " has connected!")
+
+                        
+                        #Trying out the approach on "when game ends"
+                        '''
+                        elif "referee" in parsed_line:
+                            line = self.rclParsing.get_endGame_info(parsed_line)
+                            print("The game has ended!")
+                        '''

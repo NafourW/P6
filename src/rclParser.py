@@ -1,6 +1,9 @@
 from pyparsing import Word, Combine, ZeroOrMore, Optional, Literal, Suppress, Group, alphanums, OneOrMore, nums, SkipTo, alphas, lineEnd
 
+
 class rclParsing:
+    is_game_end = False
+
     def get_initialization_info(self, line):
         # General
         integer = Word(nums)
@@ -48,7 +51,7 @@ class rclParsing:
         drop_ball = Group("drop_ball")
         play_on = Group("play_on")
         before_kick_off = Group("before_kick_off")
-        kick_off = Group("kick_off" + Suppress("_") + (Literal('l') | Literal('r')))
+        kick_off = Group("kick_off" + Suppress("_") + (Literal('l') | Literal('r'))).setParseAction(rclParsing.game_has_begun)
         kick_in = Group("kick_in" + Suppress("_") + (Literal('l') | Literal('r')))
         free_kick = Group("free_kick" + Suppress("_") + (Literal('l') | Literal('r')))
         free_kick_fault = Group("free_kick_fault" + Suppress("_") + (Literal('l') | Literal('r')))
@@ -82,7 +85,7 @@ class rclParsing:
         illegal_defense = Group("illegal_defense" + Suppress("_") + (Literal('l') | Literal('r')))
         pause = Group("pause")
         time_up = Group("time_up")
-        time_over = Group("time_over")
+        time_over = Group("time_over").setParseAction(rclParsing.game_has_ended)
         human_judge = Group("human_judge")
         messageKeyword = drop_ball | play_on | before_kick_off | kick_off | kick_in | free_kick | free_kick_fault | indirect_free_kick | corner_kick | half_time | first_half_over | time_extended | goal | goal_kick | goalie_catch_ball | catch_fault | offside | penalty_onfield | penalty_foul | penalty_kick | penalty_setup | penalty_ready | penalty_taken | penalty_miss | penalty_score | penalty_winner | foul | foul_charge | foul_push | foul_multiple_attack | foul_ballout | back_pass | yellow_card | red_card | illegal_defense | pause | time_up | time_over | human_judge
         message = time + lp + "referee" + messageKeyword + rp
@@ -128,7 +131,33 @@ class rclParsing:
 
         return line.parseString(rcl_string)
 
+    def game_has_ended(self):
+        print("The game has ended")
+        rclParsing.is_game_end = True
+
+    def game_has_begun(self):
+        print("Let's start the game!")
 
 # rcl_Parser = rclParsing()
 # print(rcl_Parser.strParsing("8000,0	(referee penalty_setup_r)"))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
+
+'''
+    def get_endGame_info(self, line):
+        # General
+        integer = Word(nums)  # simple unsigned integer
+        lp = Literal("(").suppress()
+        rp = Literal(")").suppress()
+        frame = integer
+        cycle = integer
+        time = Group(frame + Suppress(",") + cycle)
+
+        # message
+        time_up = Group("time_up")
+        time_over = Group("time_over")
+        human_judge = Group("human_judge")
+        messageKeyword = time_up | time_over | human_judge
+        message = time + lp + "referee" + messageKeyword + rp
+
+        return message.parseString(line)
+'''

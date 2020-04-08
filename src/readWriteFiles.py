@@ -9,6 +9,7 @@ class ReadWriteLogFiles:
     rcl_parsed_strings = []
     is_read = False
 
+
     def multiThreadRWFiles(self):
         Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
@@ -40,23 +41,34 @@ class ReadWriteLogFiles:
             counter = 0
             line = file.readline()
             rclParser = rclParsing()
-            while line:
+            
+            
+            while True:
                 counter += 1
-                try:
-                    rclParser.strParsing(line)
 
-                    # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
-                    if self.is_read == True and len(self.rcl_parsed_strings) > 100:
-                        print("Cleared")
-                        self.clear_parsed_strings()
-                        self.is_read = False
-                    
-                    self.rcl_parsed_strings.append(line)
-                except ParseException as e:
-                    print(e)
+                if line is "":
+                    pass
+                elif rclParser.is_game_end == True:
                     break
+                else:
+                    try:
+                        print(line)
+                        rclParser.strParsing(line)
 
-                line = file.readline()
+                        # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
+                        if self.is_read == True and len(self.rcl_parsed_strings) > 100:
+                            print("Cleared")
+                            self.clear_parsed_strings()
+                            self.is_read = False
+                        
+                        self.rcl_parsed_strings.append(line)
+
+                    except ParseException as e:
+                        print(e)
+                        break
+
+                    line = file.readline()
+
         
             print("Lines parsed: " + str(counter))
             error_line = line if line else "No errors while parsing rcl file"
@@ -76,4 +88,3 @@ class ReadWriteLogFiles:
 
     def get_length(self):
         return len(self.rcl_parsed_strings)
-

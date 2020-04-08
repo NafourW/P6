@@ -13,6 +13,52 @@ class rcgParsing:
 
         return frame_line.parseString(line)
 
+    def get_player_info(self, line):
+        left_p = Literal("(").suppress()
+        right_p = Literal(")").suppress()
+        frame_number = Word(nums)
+
+        # Frame and ball information
+        show_frame = Word("show ") + frame_number
+        ball = left_p + left_p + Literal("b") + right_p + Word(nums + "-.") * 4 + right_p
+
+        # Player information
+        player_number = left_p + (Word("r") ^ Word("l")) + Word(nums) + right_p
+
+        # Player positions
+        player_position = Word(alphanums + "-.")
+
+        # Player view mode - H for high and L for low
+        view_mode = left_p + Literal("v") + (Word("h") ^ Word("l")) + Word(nums) + right_p
+        stamina = left_p + Literal("s") + Word(nums + "-.") * 4 + right_p
+
+        # Outer flag rules
+        flag_pos = Word("lrbtc", max=1)
+        field_side = Word("lr", max=1)
+        distance_from_center = Word(nums)
+        outer_flag = flag_pos + ZeroOrMore(field_side) + distance_from_center
+
+        # Inner flag rules
+        inner_flag_pos = Word("lrc", max=1)
+        inner_flag = inner_flag_pos + (Word("b") ^ Word("t"))
+
+        # Center flag
+        center_flag = Literal("c")
+        flag = left_p + Literal("f") + (outer_flag ^ inner_flag ^ center_flag) + right_p
+
+        # Additional information
+        additional = left_p + Literal("c") + Word(nums + "-.") * 11 + right_p
+
+        player = left_p + Group(player_number) + Group(ZeroOrMore(player_position)) + Group(view_mode) + Group(stamina) + Group(ZeroOrMore(flag)) + Group(additional) + right_p
+
+        # Frame lines
+        frame_line1 = show_frame.suppress() + ball.suppress() + (Group(player) * 11)
+        frame_line2 = (Group(player) * 11)
+
+        read_line = left_p + (frame_line1 + frame_line2) + right_p
+
+        return read_line.parseString(line)
+
     def strParsing(self, rcg_string):
         left_p = Literal("(")
         right_p = Literal(")")

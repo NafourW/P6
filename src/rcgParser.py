@@ -69,12 +69,13 @@ class rcgParsing:
         player_type = "player_type " + SkipTo(lineEnd)
 
         # End game - (msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")
-        end_game = "msg" + frame_number + nums + Suppress('"') + Suppress(left_p) + "result" + nums + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"')
+        end_game = "msg" + frame_number + Word(nums) + Suppress('"') + Suppress(left_p) + "result" + Word(nums) + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"')
+        team_graphic = "msg" + frame_number + Word(nums) + Suppress('"') + Suppress(left_p) + (Word("team_graphic_l") ^ Word("team_graphic_r")) + SkipTo(lineEnd)
 
         # Frame lines
         frame_line1 = show_frame + ball + (player * 11)
         frame_line2 = (player * 11)
 
-        read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ end_game ^ ((frame_line1 + frame_line2) ^ play_mode ^ team_score) + right_p))
+        read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ end_game ^ team_graphic ^ ((frame_line1 + frame_line2) ^ play_mode ^ team_score) + right_p))
 
         return read_line.parseString(rcg_string)

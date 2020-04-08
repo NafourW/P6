@@ -1,6 +1,18 @@
-from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums, Combine, Suppress
+from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums, Combine, Suppress, Group, Suppress
 
 class rcgParsing:
+    def get_ball_info(self, line):
+        left_p = Literal("(").suppress()
+        right_p = Literal(")").suppress()
+        frame_number = Word(nums) 
+
+        show_frame = Word("show ") + frame_number
+        ball = left_p + left_p + Literal("b") + right_p + Group(Word(nums + "-.") * 4) + right_p
+
+        frame_line = left_p + Group(show_frame).suppress() + ball + SkipTo(lineEnd)
+
+        return frame_line.parseString(line)
+
     def strParsing(self, rcg_string):
         left_p = Literal("(")
         right_p = Literal(")")

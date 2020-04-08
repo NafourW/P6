@@ -4,7 +4,6 @@ class rclParsing:
     def get_initialization_info(self, line):
         # General
         integer = Word(nums)
-        realNumber = Combine(ZeroOrMore(Word("-", max=1)) + integer + Optional('.' + integer + Optional(((Literal('e-')) ^ (Literal('e+'))) + integer)))
         lp = Literal("(").suppress()
         rp = Literal(")").suppress()
         time = Group(integer + Suppress(",") + integer)

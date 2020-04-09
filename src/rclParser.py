@@ -132,7 +132,6 @@ class rclParsing:
         return line.parseString(rcl_string)
 
     def game_has_ended(self):
-        print("The game has ended")
         rclParsing.is_game_end = True
 
     def game_has_begun(self):

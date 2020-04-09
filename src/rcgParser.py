@@ -1,6 +1,9 @@
-from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums, Combine, Suppress, Group, Suppress
+from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums, Combine, Suppress, Group, Suppress, Optional
 
 class rcgParsing:
+    is_game_end = False
+
+
     def get_ball_info(self, line):
         left_p = Literal("(").suppress()
         right_p = Literal(")").suppress()
@@ -59,13 +62,13 @@ class rcgParsing:
 
         return read_line.parseString(line)
 
+
     def strParsing(self, rcg_string):
         left_p = Literal("(")
         right_p = Literal(")")
         frame_number = Word(nums) 
         # This needs to be taken care of by AST because some teams have '_' in their names
-        teamscore_result = Combine(ZeroOrMore(alphanums + "_")) + Suppress("_") + nums
-
+        teamscore_result = Group(Group(Word(alphanums)) + "_" + Group(Word(alphanums)) + Optional(Suppress("_") + Group(Word(nums))))
 
         # Playmode
         # Playmode list
@@ -115,13 +118,33 @@ class rcgParsing:
         player_type = "player_type " + SkipTo(lineEnd)
 
         # End game - (msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")
-        end_game = "msg" + frame_number + Word(nums) + Suppress('"') + Suppress(left_p) + "result" + Word(nums) + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"')
-        team_graphic = "msg" + frame_number + Word(nums) + Suppress('"') + Suppress(left_p) + (Word("team_graphic_l") ^ Word("team_graphic_r")) + SkipTo(lineEnd)
+        #end_game = Word("result") + Word(nums) + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"').setParseAction(self.game_has_ended(rcg_string))
+        end_game = Word("result") + Word(nums) + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"')
+        team_graphic = (Word("team_graphic_l") ^ Word("team_graphic_r")) + SkipTo(lineEnd)
+
+        msg = "msg" + frame_number + Word(nums) + Suppress('"') + Suppress(left_p) + (end_game|team_graphic)
 
         # Frame lines
         frame_line1 = show_frame + ball + (player * 11)
         frame_line2 = (player * 11)
 
-        read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ end_game ^ team_graphic ^ ((frame_line1 + frame_line2) ^ play_mode ^ team_score) + right_p))
+        read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ msg ^ ((frame_line1 + frame_line2) ^ play_mode ^ team_score) + right_p))
 
         return read_line.parseString(rcg_string)
+
+
+
+    def game_has_ended(self):
+        #print the result and announce the winner and the game has ended here!
+        
+        print("Hey dude")
+        #line = 
+        rcgParsing.is_game_end = True
+
+
+
+rcg_Parser = rcgParsing()
+#rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")''')
+
+
+print(rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")'''))

@@ -20,16 +20,23 @@ class ReadWriteLogFiles:
             counter = 0
             line = file.readline()
             rcgParser = rcgParsing()
-            while line:
+            
+            while True:
                 counter += 1
-                try:
-                    rcgParser.strParsing(line)
-                    self.rcg_parsed_strings.append(line)
-                except ParseException as e:
-                    print(e)
-                    break
 
-                line = file.readline()
+                if line is "":
+                    pass
+                elif rcgParser.is_game_end == True:
+                    break
+                else:
+                    try:
+                        rcgParser.strParsing(line)
+                        self.rcg_parsed_strings.append(line)
+                    except ParseException as e:
+                        print(e)
+                        break
+
+                    line = file.readline()
         
             print("Lines parsed: " + str(counter))
             error_line = line if line else "No errors while parsing rcg file"
@@ -42,7 +49,6 @@ class ReadWriteLogFiles:
             line = file.readline()
             rclParser = rclParsing()
             
-            
             while True:
                 counter += 1
 
@@ -52,7 +58,6 @@ class ReadWriteLogFiles:
                     break
                 else:
                     try:
-                        print(line)
                         rclParser.strParsing(line)
 
                         # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
@@ -68,7 +73,6 @@ class ReadWriteLogFiles:
                         break
 
                     line = file.readline()
-
         
             print("Lines parsed: " + str(counter))
             error_line = line if line else "No errors while parsing rcl file"

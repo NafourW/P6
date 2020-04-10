@@ -11,12 +11,12 @@ class ReadWriteLogFiles:
 
 
     def multiThreadRWFiles(self):
-        #Thread(target = self.readLogFileRCL).start()
+        Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
         
 
     def readLogFileRCG(self):
-        with open("logfiles/test.rcg", "r") as file:
+        with open("logfiles/incomplete.rcg", "r") as file:
             counter = 0
             line = file.readline()
             rcgParser = rcgParsing()

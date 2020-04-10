@@ -2,7 +2,10 @@ from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanum
 
 class rcgParsing:
     is_game_end = False
-
+    team_name_1 = None
+    team_name_2 = None
+    team_score_1 = 0
+    team_score_2 = 0
 
     def get_ball_info(self, line):
         left_p = Literal("(").suppress()
@@ -67,8 +70,11 @@ class rcgParsing:
         left_p = Literal("(")
         right_p = Literal(")")
         frame_number = Word(nums) 
+        teamscore_result_name = Word(alphanums)
+        teamscore_result_value = Word(alphanums)
+        teamscore_result_score = Word(nums)
         # This needs to be taken care of by AST because some teams have '_' in their names
-        teamscore_result = Group(Group(Word(alphanums)) + "_" + Group(Word(alphanums)) + Optional(Suppress("_") + Group(Word(nums))))
+        teamscore_result = (teamscore_result_name + "_" + teamscore_result_value + Optional("_" + teamscore_result_score)).setParseAction(rcgParsing.get_team_result)
 
         # Playmode
         # Playmode list
@@ -118,8 +124,7 @@ class rcgParsing:
         player_type = "player_type " + SkipTo(lineEnd)
 
         # End game - (msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")
-        #end_game = Word("result") + Word(nums) + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"').setParseAction(self.game_has_ended(rcg_string))
-        end_game = Word("result") + Word(nums) + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"')
+        end_game = Word("result") + Word(nums) + teamscore_result + Suppress("-vs-") + teamscore_result + Suppress(right_p)+ Suppress('"').setParseAction(rcgParsing.game_has_ended)
         team_graphic = (Word("team_graphic_l") ^ Word("team_graphic_r")) + SkipTo(lineEnd)
 
         msg = "msg" + frame_number + Word(nums) + Suppress('"') + Suppress(left_p) + (end_game|team_graphic)
@@ -132,19 +137,37 @@ class rcgParsing:
 
         return read_line.parseString(rcg_string)
 
+    def get_team_result(self, teamscore_result):
+        if rcgParsing.team_name_1 is not None:
+            rcgParsing.team_score_2 = int(teamscore_result[len(teamscore_result) - 1])
+            rcgParsing.team_name_2 = ''
+            i = 0
+            while i < (len(teamscore_result) - 2):
+                rcgParsing.team_name_2 += teamscore_result[i]
+                i += 1
+
+        else:
+            rcgParsing.team_score_1 = int(teamscore_result[len(teamscore_result) - 1])
+            rcgParsing.team_name_1 = ''
+            i = 0
+            while i < (len(teamscore_result) - 2):
+                rcgParsing.team_name_1 += teamscore_result[i]
+                i += 1
 
 
     def game_has_ended(self):
-        #print the result and announce the winner and the game has ended here!
+        print("Finally the game has ended, and the victory goes to ")
+        if rcgParsing.team_score_1 == rcgParsing.team_score_2:
+            print("no one! Because we got a draw!")
+        elif rcgParsing.team_score_1 > rcgParsing.team_score_2:
+            print(rcgParsing.team_name_1 + "!")
+        elif rcgParsing.team_score_2 > rcgParsing.team_score_1:
+            print(rcgParsing.team_name_2 + "!")
         
-        print("Hey dude")
-        #line = 
         rcgParsing.is_game_end = True
 
 
 
-rcg_Parser = rcgParsing()
+#rcg_Parser = rcgParsing()
 #rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")''')
-
-
-print(rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")'''))
+#print(rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")'''))

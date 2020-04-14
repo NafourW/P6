@@ -18,11 +18,10 @@ class ReadWriteLogFiles:
     def readLogFileRCG(self):
         with open("logfiles/incomplete.rcg", "r") as file:
             counter = 0
-            line = file.readline()
             rcgParser = rcgParsing()
-            
+            line = file.readline()
+
             while True:
-                counter += 1
 
                 if line is "":
                     pass
@@ -30,6 +29,7 @@ class ReadWriteLogFiles:
                     break
                 else:
                     try:
+                        counter += 1
                         rcgParser.strParsing(line)
                         self.rcg_parsed_strings.append(line)
                     except ParseException as e:
@@ -46,20 +46,18 @@ class ReadWriteLogFiles:
     def readLogFileRCL(self):
         with open("logfiles/incomplete.rcl", "r") as file:
             counter = 0
-            line = file.readline()
             rclParser = rclParsing()
-            
-            while True:
-                counter += 1
+            line = file.readline()
 
+            while True:
                 if line is "":
                     pass
                 elif rclParser.is_game_end == True:
                     break
                 else:
                     try:
+                        counter += 1
                         rclParser.strParsing(line)
-
                         # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
                         if self.is_read == True and len(self.rcl_parsed_strings) > 100:
                             print("Cleared")

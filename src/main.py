@@ -7,8 +7,8 @@ from time import sleep
 if __name__ == "__main__":
 
     # Run shells
-    rsm = rsm()
-    rsm.runShells()
+    #rsm = rsm()
+    #rsm.runShells()
     
     sleep(5) # wait for network to setup
 

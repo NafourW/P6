@@ -15,7 +15,7 @@ if __name__ == "__main__":
     rwlf = rwlf()
     rwlf.multiThreadRWFiles()
     
-    
-    commentator = Commentator(rwlf)
-    while True:
-        commentator.commentate()
+    # DISABLED
+    # commentator = Commentator(rwlf)
+    # while True:
+        # commentator.commentate()

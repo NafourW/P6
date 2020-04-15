@@ -15,9 +15,17 @@ class rcgParsing:
         show_frame = Word("show ") + frame_number
         ball = left_p + left_p + Literal("b") + right_p + Group(Word(nums + "-.") * 4) + right_p
 
-        frame_line = left_p + Group(show_frame).suppress() + ball + SkipTo(lineEnd)
+        frame_line = left_p + Group(show_frame).suppress() + ball + SkipTo(lineEnd).suppress()
 
-        return frame_line.parseString(line)
+        parsed_ball_info = frame_line.parseString(line)
+        ball_info = {
+            "pos_x" : parsed_ball_info[1][0],
+            "pos_y" : parsed_ball_info[1][1],
+            "vel_x" : parsed_ball_info[1][2],
+            "vel_y" : parsed_ball_info[1][3]
+        }
+        return ball_info
+
 
     def get_player_info(self, line):
         left_p = Literal("(").suppress()
@@ -63,7 +71,28 @@ class rcgParsing:
 
         read_line = left_p + (frame_line1 + frame_line2) + right_p
 
-        return read_line.parseString(line)
+        parsed_players = read_line.parseString(line)
+
+        # Place information into dictionary to easily query information
+        player_info = {}
+        counter = 1
+        for player in parsed_players:
+            body_info = player[1]
+            player_info[str(counter)] = {
+            "side" : player[0][0],
+            "unum" : player[0][1],
+            "type_id" : body_info[0],
+            "state" : body_info[1],
+            "pos_x" : body_info[2],
+            "pos_y" : body_info[3],
+            "vel_x" : body_info[4],
+            "vel_y" : body_info[5],
+            "body_angle" : body_info[6],
+            "head_angle" : body_info[7]}
+            
+            counter += 1
+
+        return player_info
 
 
     def strParsing(self, rcg_string):

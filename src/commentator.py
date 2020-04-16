@@ -1,5 +1,5 @@
-from rclParser import rclParsing
-from rcgParser import rcgParsing
+from parsers.rclParser import rclParsing
+from parsers.rcgParser import rcgParsing
 
 class Commentator:
     rcg_line_counter = 1

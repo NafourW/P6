@@ -1,6 +1,6 @@
 from threading import Thread
-from rclParser import rclParsing
-from rcgParser import rcgParsing
+from parsers.rclParser import rclParsing
+from parsers.rcgParser import rcgParsing
 from pyparsing import ParseException
 import os
 

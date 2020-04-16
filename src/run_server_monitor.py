@@ -45,16 +45,3 @@ class RunServerMonitor:
                 sys.exit('Failed to start %r, reason %s' % (macOStermrm, e))
         else:
             print("OS not supported.")
-
-class Client:
-
-    def startme(self):
-        self.udp_ip = "localhost"
-        self.udp_port = 6000
-        self.sock = socket.socket(socket.AF_INET,  # Internet
-                                  socket.SOCK_DGRAM)  # UDP
-
-    def train(self, command):
-
-        # Send command to server
-        self.sock.sendto(command.encode(), (self.udp_ip, self.udp_port))

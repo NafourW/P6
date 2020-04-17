@@ -131,10 +131,11 @@ class ParseTesting(unittest.TestCase):
             closest_distance = 6
             player_possesing = None
 
-            for x in range(1, 23):
-                # If the ball is not in the starting position
-                if not float(ball_info["pos_x"]) == 0 and float(ball_info["pos_y"]) == 0:
+            # If the ball is not in the starting position
+            if float(ball_info["pos_x"]) != 0 and float(ball_info["pos_y"]) != 0:
 
+                # Find out which player is possesing the ball, if any
+                for x in range(1, 23):
                     # Distance from player to ball
                     distance = math.sqrt(pow((float(player_info[str(x)]["pos_x"]) - float(ball_info["pos_x"])), 2) + pow((float(player_info[str(x)]["pos_y"]) - float(ball_info["pos_y"])), 2))
                     
@@ -142,7 +143,7 @@ class ParseTesting(unittest.TestCase):
                     if distance <= 5 and distance < closest_distance: 
                         closest_distance = distance
                         player_possesing = x
-            
+        
             # Save who possesed the ball
             if player_possesing is not None:
                 # If the player possesing the ball is from team 1
@@ -151,12 +152,15 @@ class ParseTesting(unittest.TestCase):
                 elif player_possesing > 11:
                     t2_ball_possesion.append("team2")
 
-        # Make sure not to divide by zero
-        if len(t1_ball_possesion) != 0 or len(t2_ball_possesion) != 0:
-            print("Team 1 ball possesion: %.2f%%" % float((len(t1_ball_possesion) / (len(t1_ball_possesion) + len(t2_ball_possesion))) * 100))
-            print("Team 2 ball possesion: %.2f%%" % float((len(t2_ball_possesion) / (len(t1_ball_possesion) + len(t2_ball_possesion))) * 100))
-        
+        # Calculate the possesion statistics
+        t1_ball_possesion_size = len(t1_ball_possesion)
+        t2_ball_possesion_size = len(t2_ball_possesion)
 
+        # Make sure not to divide by zero
+        if t1_ball_possesion_size != 0 or t2_ball_possesion_size != 0:
+            print("Team 1 ball possesion: %.2f%%" % (float(t1_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100))
+            print("Team 2 ball possesion: %.2f%%" % (float(t2_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100))
+        
 
 if __name__ == "__main__":
     unittest.main()

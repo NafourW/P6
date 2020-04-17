@@ -19,9 +19,10 @@ class ReadWriteLogFiles:
     rcl_is_read = False
 
 
-    def __init__(self, rcg_file, rcl_file):
+    def __init__(self, rcg_file, rcl_file, app):
         self.rcg_file = rcg_file
         self.rcl_file = rcl_file
+        self.app = app
 
 
     def multiThreadRWFiles(self):
@@ -31,19 +32,17 @@ class ReadWriteLogFiles:
 
     def readLogFileRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
-            counter = 0
+            frame_counter = 0
             rcgParser = rcgParsing()
             line = file.readline()
 
             while True:
-
                 if line is "":
                     pass
                 elif rcgParser.is_game_end == True:
                     break
                 else:
                     try:
-                        counter += 1
                         rcgParser.strParsing(line)
 
                         # DISABLED
@@ -66,9 +65,11 @@ class ReadWriteLogFiles:
                                 self.ball_location_history.append("left")
                             elif float(ball_info["pos_x"]) < 0:
                                 self.ball_location_history.append("right")
+
+                            frame_counter += 1
                         
-                        # Every 1000 frames, print statistics
-                        if counter % 100 == 0:
+                        # Every 100 frames, print statistics
+                        if frame_counter % 100 == 0:
                             self.print_ball_possesion_statistics()
                             self.print_ball_location_statistics()
                         
@@ -79,10 +80,6 @@ class ReadWriteLogFiles:
                         break
 
                     line = file.readline()
-        
-            print("Lines parsed: " + str(counter))
-            error_line = line if line else "No errors while parsing rcg file"
-            print(error_line) 
 
 
     def readLogFileRCL(self):
@@ -158,10 +155,13 @@ class ReadWriteLogFiles:
 
         # Make sure not to divide by 0
         if ball_location_history_size != 0:
-            print("Ball on Left side of field percentage: %.0f%%" 
-                % float((self.ball_location_history.count("left") / len(self.ball_location_history) * 100)))
-            print("Ball on Right side of field percentage: %.0f%%" 
-                % float((self.ball_location_history.count("right") / len(self.ball_location_history) * 100)))
+            line1 = "Ball on Left side of field percentage: %.0f%%" % float((self.ball_location_history.count("left") / len(self.ball_location_history) * 100))
+            line2 = "Ball on Right side of field percentage: %.0f%%" % float((self.ball_location_history.count("right") / len(self.ball_location_history) * 100))
+            self.app.text_insert(line1)
+            self.app.text_insert(line2)
+    
+            print(line1)
+            print(line2)
             print("")
 
 
@@ -172,8 +172,13 @@ class ReadWriteLogFiles:
 
         # Make sure not to divide by zero
         if t1_ball_possesion_size != 0 or t2_ball_possesion_size != 0:
-            print("Team 1 ball possesion percentage: %.2f%%" % (float(t1_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100))
-            print("Team 2 ball possesion percentage: %.2f%%" % (float(t2_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100))
+            line1 = "Team 1 ball possesion percentage: %.2f%%" % (float(t1_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100)
+            line2 = "Team 2 ball possesion percentage: %.2f%%" % (float(t2_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100)
+            self.app.text_insert(line1)
+            self.app.text_insert(line2)
+
+            print(line1)
+            print(line2)
             print("")
 
 

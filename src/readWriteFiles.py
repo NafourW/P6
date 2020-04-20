@@ -19,12 +19,10 @@ class ReadWriteLogFiles:
     rcl_is_read = False
 
 
-    def __init__(self, rcg_file, rcl_file):
+    def multiThreadRWFiles(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
         self.rcl_file = rcl_file
 
-
-    def multiThreadRWFiles(self):
         Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
         
@@ -37,9 +35,7 @@ class ReadWriteLogFiles:
 
             while True:
 
-                if line is "":
-                    pass
-                elif rcgParser.is_game_end == True:
+                if rcgParser.is_game_end == True:
                     break
                 else:
                     try:
@@ -59,7 +55,7 @@ class ReadWriteLogFiles:
                             ball_info = rcgParser.get_ball_info(line)
                             player_info = rcgParser.get_player_info(line)
                             
-                            self.ball_possesion_statistics(line, ball_info, player_info)
+                            self.ball_possesion_statistics(ball_info, player_info)
 
                             # Find out whether the ball is on the left or right side of the playing field
                             if float(ball_info["pos_x"]) > 0:
@@ -92,9 +88,7 @@ class ReadWriteLogFiles:
             line = file.readline()
 
             while True:
-                if line is "":
-                    pass
-                elif rclParser.is_game_end == True:
+                if rclParser.is_game_end == True:
                     break
                 else:
                     try:
@@ -177,22 +171,8 @@ class ReadWriteLogFiles:
             print("")
 
 
-    def ball_possesion_statistics(self, line, ball_info, player_info):
-        closest_distance = 11
-        player_possesing = None
-
-        # If the ball is not in the starting position
-        if float(ball_info["pos_x"]) != 0 and float(ball_info["pos_y"]) != 0:
-            
-            # Find out which player is possesing the ball, if any
-            for x in range(1, 23):
-                # Distance from player to ball
-                distance = sqrt(pow((float(player_info[str(x)]["pos_x"]) - float(ball_info["pos_x"])), 2) + pow((float(player_info[str(x)]["pos_y"]) - float(ball_info["pos_y"])), 2))
-                
-                # If a player is within 5 units of the ball and closer than any other
-                if distance <= 10 and distance < closest_distance: 
-                    closest_distance = distance
-                    player_possesing = x
+    def ball_possesion_statistics(self, ball_info, player_info):
+        player_possesing = self.get_player_number_possesing_ball(ball_info, player_info)
         
         # Save who possesed the ball
         if player_possesing is not None:
@@ -201,3 +181,74 @@ class ReadWriteLogFiles:
                 self.t1_ball_possesion.append("team1")
             elif player_possesing > 11:
                 self.t2_ball_possesion.append("team2")
+
+
+    def get_player_number_possesing_ball(self, ball_info, player_info):
+        closest_distance = 11
+        player_possesing = None
+
+        # If the ball is not in the starting position
+        if float(ball_info["pos_x"]) != 0 or float(ball_info["pos_y"]) != 0:
+            
+            # Find out which player is possesing the ball, if any
+            for player_number in range(1, 23):
+                
+                pos_x_player = float(player_info[str(player_number)]["pos_x"])
+                pos_y_player = float(player_info[str(player_number)]["pos_y"])
+
+                pos_x_ball = float(ball_info["pos_x"])
+                pos_y_ball = float(ball_info["pos_y"])
+
+                pow1 = pow((pos_x_player - pos_x_ball), 2)
+                pow2 = pow((pos_y_player - pos_y_ball), 2)
+
+                # Distance from player to ball
+                distance = sqrt(pow1 + pow2)
+                
+                # If a player is within 5 units of the ball and closer than any other
+                if distance <= 10 and distance < closest_distance: 
+                    closest_distance = distance
+                    player_possesing = player_number
+        
+        return player_possesing
+
+
+    def get_distance_from_player_to_team(self, player_number, player_info):
+        distance = {}
+
+        # Team 1
+        if player_number <= 11:
+            for compare_player_number in range(1, 12):
+
+                # If the two players we are comparing are not the same
+                if compare_player_number != player_number:
+
+                    pos_x_player = float(player_info[str(player_number)]["pos_x"])
+                    pos_y_player = float(player_info[str(player_number)]["pos_y"])
+
+                    pos_x_compare = float(player_info[str(compare_player_number)]["pos_x"])
+                    pos_y_compare = float(player_info[str(compare_player_number)]["pos_y"])
+
+                    pow1 = pow(pos_x_player - pos_x_compare, 2)
+                    pow2 = pow(pos_y_player - pos_y_compare, 2)
+
+                    distance[compare_player_number] = sqrt(pow1 + pow2)
+        # Team 2
+        elif player_number > 11:
+            for compare_player_number in range(1, 12):
+
+                # If the two players we are comparing are not the same
+                if compare_player_number != player_number:
+
+                    pos_x_player = float(player_info[str(player_number)]["pos_x"])
+                    pos_y_player = float(player_info[str(player_number)]["pos_y"])
+
+                    pos_x_compare = float(player_info[str(compare_player_number)]["pos_x"])
+                    pos_y_compare = float(player_info[str(compare_player_number)]["pos_y"])
+
+                    pow1 = pow(pos_x_player - pos_x_compare, 2)
+                    pow2 = pow(pos_y_player - pos_y_compare, 2)
+
+                    distance[compare_player_number] = sqrt(pow1 + pow2)
+
+        return distance

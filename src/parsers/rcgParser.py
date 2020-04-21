@@ -1,6 +1,7 @@
 from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums, Combine, Suppress, Group, Suppress, Optional
 
 class rcgParsing:
+    current_frame = 0
     is_game_end = False
     team_name_1 = None
     team_name_2 = None
@@ -114,7 +115,7 @@ class rcgParsing:
         team_score = Word("team ") + Word(nums) + Word(alphanums) + Word(alphanums) + Word(nums) * 2
 
         # Frame and ball information
-        show_frame = Word("show ") + frame_number
+        show_frame = Word("show ") + frame_number.setParseAction(rcgParsing.get_current_frame)
         ball = left_p + left_p + Literal("b") + right_p + Word(nums + "-.") * 4 + right_p
 
         # Player information
@@ -166,6 +167,12 @@ class rcgParsing:
 
         return read_line.parseString(rcg_string)
 
+
+    def get_current_frame(self, show_frame):
+        rcgParsing.current_frame = show_frame[0]
+        #print(rcgParsing.current_frame)
+
+
     def get_team_result(self, teamscore_result):
         if rcgParsing.team_name_1 is not None:
             rcgParsing.team_score_2 = int(teamscore_result[len(teamscore_result) - 1])
@@ -198,5 +205,6 @@ class rcgParsing:
 
 
 #rcg_Parser = rcgParsing()
+#rcg_Parser.strParsing('''''')
 #rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")''')
 #print(rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")'''))

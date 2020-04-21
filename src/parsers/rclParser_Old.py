@@ -214,14 +214,15 @@ class rclParsing:
     def game_has_ended(self):
         rclParsing.is_game_end = True
 
-#rcl_Parser = rclParsing()
+
+rcl_Parser = rclParsing()
 #rcl_Parser.strParsing("0,23	Recv CYRUS2019_1: (init CYRUS2019 (version 14) (goalie))")
 #rcl_Parser.strParsing("0,45	Recv HELIOS2019_1: (init HELIOS2019 (version 15) (goalie))")
 #rcl_Parser.strParsing("2324,0	(referee yellow_card_l_2)")
 #rcl_Parser.strParsing("2324,0	(referee red_card_r_11)")
 #rcl_Parser.strParsing("5997,0	Recv HELIOS2019_9: (turn 0)(turn_neck 0)")
 #rcl_Parser.strParsing("")
-#rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(turn_neck -45)")
+rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(turn_neck -45)")
 
 #rcl_Parser.strParsing("2542,0	(referee goal_r_1)")
 #print(rcl_Parser.strParsing("2542,0	(referee goal_r_1)"))

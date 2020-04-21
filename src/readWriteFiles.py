@@ -25,7 +25,14 @@ class ReadWriteLogFiles:
 
         Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
-        
+        '''
+        while self.rcgParser.current_frame != self.rclParser.current_frame:
+            if self.rcgParser.current_frame > self.rclParser.current_frame:
+                print("rcg is too fast")
+            elif self.rcgParser.current_frame < self.rclParser.current_frame:
+                print("rcl is too fast")
+        '''
+
 
     def readLogFileRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
@@ -40,7 +47,7 @@ class ReadWriteLogFiles:
                 else:
                     try:
                         counter += 1
-                        rcgParser.strParsing(line)
+                        rcgParser.strParsing(line) #self.rcgParser.strParsing(line)
 
                         # DISABLED
                         # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
@@ -52,8 +59,8 @@ class ReadWriteLogFiles:
 
                         # If it is a frame save the location of the ball
                         if "show" in line:
-                            ball_info = rcgParser.get_ball_info(line)
-                            player_info = rcgParser.get_player_info(line)
+                            ball_info = rcgParser.get_ball_info(line) #self.rcgParser.get_ball_info(line)
+                            player_info = rcgParser.get_player_info(line) #self.rcgParser.get_player_info(line)
                             
                             self.ball_possesion_statistics(ball_info, player_info)
 
@@ -93,7 +100,7 @@ class ReadWriteLogFiles:
                 else:
                     try:
                         counter += 1
-                        rclParser.strParsing(line)
+                        rclParser.strParsing(line) #self.rclParser.strParsing(line)
 
                         # DISABLED
                         # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable

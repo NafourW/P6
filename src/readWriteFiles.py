@@ -12,53 +12,69 @@ class ReadWriteLogFiles:
     ball_location_history = []
 
 
+    # parsers
+    rcgParser = rcgParsing()
+    rclParser = rclParsing()
+
     def multiThreadRWFiles(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
         self.rcl_file = rcl_file
 
-        Thread(target = self.readLogFileRCL).start()
+        #Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
-        '''
+        
+
         while self.rcgParser.current_frame != self.rclParser.current_frame:
             if self.rcgParser.current_frame > self.rclParser.current_frame:
                 print("rcg is too fast")
             elif self.rcgParser.current_frame < self.rclParser.current_frame:
                 print("rcl is too fast")
-        '''
+        
 
 
     def readLogFileRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
             counter = 0
-            rcgParser = rcgParsing()
+            #rcgParser = rcgParsing()
             line = file.readline()
 
             while True:
 
-                if rcgParser.is_game_end == True:
+                if self.rcgParser.is_game_end == True:
                     break
                 else:
                     try:
+                        '''
+                        while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
+                            if int(self.rcgParser.current_frame) > int(self.rclParser.current_frame):
+                                print("rcg is too fast, rcg frame: " + self.rcgParser.current_frame + " rcl frame: " + self.rclParser.current_frame)
+                            else:
+                                break
+                        '''
+
                         counter += 1
-                        rcgParser.strParsing(line)
+                        self.rcgParser.strParsing(line) #self.rcgParser.strParsing(line)
 
                         # If it is a frame save the location of the ball
                         if "show" in line:
-                            ball_info = rcgParser.get_ball_info(line)
-                            player_info = rcgParser.get_player_info(line)
+                            ball_info = self.rcgParser.get_ball_info(line) #self.rcgParser.get_ball_info(line)
+                            player_info = self.rcgParser.get_player_info(line) #self.rcgParser.get_player_info(line)
                             
-                            self.ball_possesion_statistics(ball_info, player_info)
+                            # self.ball_possesion_statistics(ball_info, player_info)
+                            player_Ball = str(self.get_player_number_possesing_ball(ball_info, player_info))
+                            print("Frame: " + self.rcgParser.current_frame + "  " + player_Ball + " has the ball!")
 
                             # Find out whether the ball is on the left or right side of the playing field
                             if float(ball_info["pos_x"]) > 0:
                                 self.ball_location_history.append("left")
                             elif float(ball_info["pos_x"]) < 0:
                                 self.ball_location_history.append("right")
-                        
+                        '''
                         # Every 1000 frames, print statistics
                         if counter % 100 == 0:
                             self.print_ball_possesion_statistics()
                             self.print_ball_location_statistics()
+                        '''
                         
                     except ParseException as e:
                         print(e)
@@ -74,16 +90,24 @@ class ReadWriteLogFiles:
     def readLogFileRCL(self):
         with open("logfiles/" + self.rcl_file, "r") as file:
             counter = 0
-            rclParser = rclParsing()
+            #rclParser = rclParsing()
             line = file.readline()
 
             while True:
-                if rclParser.is_game_end == True:
+                if self.rclParser.is_game_end == True:
                     break
                 else:
                     try:
+                        '''
+                        while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
+                            if int(self.rcgParser.current_frame) < int(self.rclParser.current_frame):
+                                print("rcl is too fast, rcl frame: " + self.rclParser.current_frame + " rcg frame: " + self.rcgParser.current_frame)
+                            else:
+                                break
+                        '''
+                                
                         counter += 1
-                        rclParser.strParsing(line) #self.rclParser.strParsing(line)
+                        self.rclParser.strParsing(line) #self.rclParser.strParsing(line)
 
                     except ParseException as e:
                         print(e)
@@ -135,7 +159,7 @@ class ReadWriteLogFiles:
 
 
     def get_player_number_possesing_ball(self, ball_info, player_info):
-        closest_distance = 11
+        closest_distance = 3
         player_possesing = None
 
         # If the ball is not in the starting position
@@ -157,11 +181,10 @@ class ReadWriteLogFiles:
                 distance = sqrt(pow1 + pow2)
                 
                 # If a player is within 5 units of the ball and closer than any other
-                if distance <= 10 and distance < closest_distance: 
-
+                if distance <= 2 and distance < closest_distance: 
                     closest_distance = distance
                     player_possesing = player_number
-        
+
         return player_possesing
 
 

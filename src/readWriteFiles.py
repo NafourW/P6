@@ -20,7 +20,7 @@ class ReadWriteLogFiles:
         self.rcg_file = rcg_file
         self.rcl_file = rcl_file
 
-        #Thread(target = self.readLogFileRCL).start()
+        Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
         
 
@@ -35,7 +35,6 @@ class ReadWriteLogFiles:
     def readLogFileRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
             counter = 0
-            #rcgParser = rcgParsing()
             line = file.readline()
 
             while True:
@@ -53,28 +52,28 @@ class ReadWriteLogFiles:
                         '''
 
                         counter += 1
-                        self.rcgParser.strParsing(line) #self.rcgParser.strParsing(line)
+                        self.rcgParser.strParsing(line)
 
                         # If it is a frame save the location of the ball
                         if "show" in line:
-                            ball_info = self.rcgParser.get_ball_info(line) #self.rcgParser.get_ball_info(line)
-                            player_info = self.rcgParser.get_player_info(line) #self.rcgParser.get_player_info(line)
+                            ball_info = self.rcgParser.get_ball_info(line)
+                            player_info = self.rcgParser.get_player_info(line)
                             
-                            # self.ball_possesion_statistics(ball_info, player_info)
+                            self.ball_possesion_statistics(ball_info, player_info)
+                            '''
                             player_Ball = str(self.get_player_number_possesing_ball(ball_info, player_info))
                             print("Frame: " + self.rcgParser.current_frame + "  " + player_Ball + " has the ball!")
-
+                            '''
                             # Find out whether the ball is on the left or right side of the playing field
                             if float(ball_info["pos_x"]) > 0:
                                 self.ball_location_history.append("left")
                             elif float(ball_info["pos_x"]) < 0:
                                 self.ball_location_history.append("right")
-                        '''
+                        
                         # Every 1000 frames, print statistics
                         if counter % 100 == 0:
                             self.print_ball_possesion_statistics()
                             self.print_ball_location_statistics()
-                        '''
                         
                     except ParseException as e:
                         print(e)
@@ -90,7 +89,6 @@ class ReadWriteLogFiles:
     def readLogFileRCL(self):
         with open("logfiles/" + self.rcl_file, "r") as file:
             counter = 0
-            #rclParser = rclParsing()
             line = file.readline()
 
             while True:
@@ -107,7 +105,7 @@ class ReadWriteLogFiles:
                         '''
                                 
                         counter += 1
-                        self.rclParser.strParsing(line) #self.rclParser.strParsing(line)
+                        self.rclParser.strParsing(line)
 
                     except ParseException as e:
                         print(e)

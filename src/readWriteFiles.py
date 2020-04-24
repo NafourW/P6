@@ -26,7 +26,7 @@ class ReadWriteLogFiles:
         self.rcg_file = rcg_file
         self.rcl_file = rcl_file
 
-        Thread(target = self.readLogFileRCL).start()
+        #Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
         
 
@@ -50,14 +50,18 @@ class ReadWriteLogFiles:
                     break
                 else:
                     try:
+                        '''
                         while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
                             if int(self.rcgParser.current_frame) > int(self.rclParser.current_frame):
-                                print("rcg is too fast, rcg frame: " + str(self.rcgParser.current_frame) + " rcl frame: " + str(self.rclParser.current_frame))
+                                print("rcg is too fast, rcg frame: " + self.rcgParser.current_frame + " rcl frame: " + self.rclParser.current_frame)
                             else:
                                 break
+                        '''
 
                         counter += 1
                         self.rcgParser.strParsing(line) #self.rcgParser.strParsing(line)
+
+
 
                         # DISABLED
                         # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
@@ -72,18 +76,21 @@ class ReadWriteLogFiles:
                             ball_info = self.rcgParser.get_ball_info(line) #self.rcgParser.get_ball_info(line)
                             player_info = self.rcgParser.get_player_info(line) #self.rcgParser.get_player_info(line)
                             
-                            self.ball_possesion_statistics(ball_info, player_info)
+                            # self.ball_possesion_statistics(ball_info, player_info)
+                            player_Ball = str(self.get_player_number_possesing_ball(ball_info, player_info))
+                            print("Frame: " + self.rcgParser.current_frame + "  " + player_Ball + " has the ball!")
 
                             # Find out whether the ball is on the left or right side of the playing field
                             if float(ball_info["pos_x"]) > 0:
                                 self.ball_location_history.append("left")
                             elif float(ball_info["pos_x"]) < 0:
                                 self.ball_location_history.append("right")
-                        
+                        '''
                         # Every 1000 frames, print statistics
                         if counter % 100 == 0:
                             self.print_ball_possesion_statistics()
                             self.print_ball_location_statistics()
+                        '''
                         
                         # DISABLED
                         # self.rcg_parsed_strings.append(line)
@@ -109,11 +116,13 @@ class ReadWriteLogFiles:
                     break
                 else:
                     try:
+                        '''
                         while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
                             if int(self.rcgParser.current_frame) < int(self.rclParser.current_frame):
                                 print("rcl is too fast, rcl frame: " + self.rclParser.current_frame + " rcg frame: " + self.rcgParser.current_frame)
                             else:
                                 break
+                        '''
                                 
                         counter += 1
                         self.rclParser.strParsing(line) #self.rclParser.strParsing(line)
@@ -207,7 +216,7 @@ class ReadWriteLogFiles:
 
 
     def get_player_number_possesing_ball(self, ball_info, player_info):
-        closest_distance = 11
+        closest_distance = 3
         player_possesing = None
 
         # If the ball is not in the starting position
@@ -229,10 +238,10 @@ class ReadWriteLogFiles:
                 distance = sqrt(pow1 + pow2)
                 
                 # If a player is within 5 units of the ball and closer than any other
-                if distance <= 10 and distance < closest_distance: 
+                if distance <= 2 and distance < closest_distance: 
                     closest_distance = distance
                     player_possesing = player_number
-        
+
         return player_possesing
 
 

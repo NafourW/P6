@@ -18,6 +18,9 @@ class ReadWriteLogFiles:
     rcl_parsed_strings = []
     rcl_is_read = False
 
+    # parsers
+    rcgParser = rcgParsing()
+    rclParser = rclParsing()
 
     def multiThreadRWFiles(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
@@ -25,29 +28,36 @@ class ReadWriteLogFiles:
 
         Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
-        '''
+        
+
         while self.rcgParser.current_frame != self.rclParser.current_frame:
             if self.rcgParser.current_frame > self.rclParser.current_frame:
                 print("rcg is too fast")
             elif self.rcgParser.current_frame < self.rclParser.current_frame:
                 print("rcl is too fast")
-        '''
+        
 
 
     def readLogFileRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
             counter = 0
-            rcgParser = rcgParsing()
+            #rcgParser = rcgParsing()
             line = file.readline()
 
             while True:
 
-                if rcgParser.is_game_end == True:
+                if self.rcgParser.is_game_end == True:
                     break
                 else:
                     try:
+                        while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
+                            if int(self.rcgParser.current_frame) > int(self.rclParser.current_frame):
+                                print("rcg is too fast, rcg frame: " + str(self.rcgParser.current_frame) + " rcl frame: " + str(self.rclParser.current_frame))
+                            else:
+                                break
+
                         counter += 1
-                        rcgParser.strParsing(line) #self.rcgParser.strParsing(line)
+                        self.rcgParser.strParsing(line) #self.rcgParser.strParsing(line)
 
                         # DISABLED
                         # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
@@ -59,8 +69,8 @@ class ReadWriteLogFiles:
 
                         # If it is a frame save the location of the ball
                         if "show" in line:
-                            ball_info = rcgParser.get_ball_info(line) #self.rcgParser.get_ball_info(line)
-                            player_info = rcgParser.get_player_info(line) #self.rcgParser.get_player_info(line)
+                            ball_info = self.rcgParser.get_ball_info(line) #self.rcgParser.get_ball_info(line)
+                            player_info = self.rcgParser.get_player_info(line) #self.rcgParser.get_player_info(line)
                             
                             self.ball_possesion_statistics(ball_info, player_info)
 
@@ -91,16 +101,22 @@ class ReadWriteLogFiles:
     def readLogFileRCL(self):
         with open("logfiles/" + self.rcl_file, "r") as file:
             counter = 0
-            rclParser = rclParsing()
+            #rclParser = rclParsing()
             line = file.readline()
 
             while True:
-                if rclParser.is_game_end == True:
+                if self.rclParser.is_game_end == True:
                     break
                 else:
                     try:
+                        while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
+                            if int(self.rcgParser.current_frame) < int(self.rclParser.current_frame):
+                                print("rcl is too fast, rcl frame: " + self.rclParser.current_frame + " rcg frame: " + self.rcgParser.current_frame)
+                            else:
+                                break
+                                
                         counter += 1
-                        rclParser.strParsing(line) #self.rclParser.strParsing(line)
+                        self.rclParser.strParsing(line) #self.rclParser.strParsing(line)
 
                         # DISABLED
                         # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable

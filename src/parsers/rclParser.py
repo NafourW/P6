@@ -9,8 +9,14 @@ class rclParsing:
     team_name_r = None
     player_name = None
     kick_off_counter = 0
-    yellow_cards = []
-    red_cards = []
+    kick_in_counter_l = 0
+    kick_in_counter_r = 0
+    corner_kick_counter_l = 0
+    corner_kick_counter_r = 0
+    yellow_cards_l = []
+    yellow_cards_r = []
+    red_cards_l = []
+    red_cards_r = []
     team_l_buffer = []
     team_r_buffer = []
 
@@ -54,9 +60,9 @@ class rclParsing:
         # regular_game
         play_on = Group("play_on")
         kick_off = Group("kick_off" + Suppress("_") + (Literal('l') | Literal('r'))).setParseAction(rclParsing.game_has_begun)
-        kick_in = Group("kick_in" + Suppress("_") + (Literal('l') | Literal('r')))
+        kick_in = Group("kick_in" + Suppress("_") + (Literal('l') | Literal('r'))).setParseAction(rclParsing.kick_in_counter)
         free_kick = Group("free_kick" + Suppress("_") + (Literal('l') | Literal('r')))
-        corner_kick = Group("corner_kick" + Suppress("_") + (Literal('l') | Literal('r')))
+        corner_kick = Group("corner_kick" + Suppress("_") + (Literal('l') | Literal('r'))).setParseAction(rclParsing.corner_kick_counter)
         half_time = Group("half_time")
         time_extended = Group("time_extended")
         goal = (Group("goal" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)).setParseAction(rclParsing.goal_announce)
@@ -150,7 +156,41 @@ class rclParsing:
             rclParsing.team_l_buffer.append(player_action)
         elif action[2][0] == rclParsing.team_name_r:
             rclParsing.team_r_buffer.append(player_action)
-        
+
+
+    def kick_in_counter(self, kick_in):
+        if kick_in[0][1] == 'l':
+            rclParsing.kick_in_counter_l += 1
+        elif kick_in[0][1] == 'r':
+            rclParsing.kick_in_counter_r += 1
+
+
+    def kick_in_status(self, info):
+        kick_in_total = rclParsing.kick_in_counter_r + rclParsing.kick_in_counter_l
+        if info == "total":
+            return kick_in_total
+        elif info == "l":
+            return rclParsing.kick_in_counter_l / kick_in_total * 100
+        elif info == "r":
+            return rclParsing.kick_in_counter_r / kick_in_total * 100
+
+
+    def corner_kick_counter(self, corner_kick):
+        if corner_kick[0][1] == 'l':
+            rclParsing.corner_kick_counter_l += 1
+        elif corner_kick[0][1] == 'r':
+            rclParsing.corner_kick_counter_r += 1
+
+
+    def corner_kick_status(self, info):
+        corner_kick_total = rclParsing.corner_kick_counter_l + rclParsing.corner_kick_counter_r
+        if info == "total":
+            return corner_kick_total
+        elif info == "l":
+            return rclParsing.corner_kick_counter_l / corner_kick_total * 100
+        elif info == "r":
+            return rclParsing.corner_kick_counter_r / corner_kick_total * 100
+
 
     def goal_announce(self, goal):
         if goal[0][1] == 'l':
@@ -163,27 +203,62 @@ class rclParsing:
     def get_yellow_card(self, yellow_card):
         if yellow_card[0][1] == 'l':
             player = str(rclParsing.team_name_l) + '_' + str(yellow_card[0][2])
-            rclParsing.yellow_cards.append(player)
+            rclParsing.yellow_cards_l.append(player)
             print("Well, that's a yellow card for " + player + "!")
         elif yellow_card[0][1] == 'r':
             player = str(rclParsing.team_name_r) + '_' + str(yellow_card[0][2])
-            rclParsing.yellow_cards.append(player)
+            rclParsing.yellow_cards_r.append(player)
             print("Well, that's a yellow card for " + player + "!")
 
 
     def get_red_card(self, red_card):
         if red_card[0][1] == 'l':
             player = str(rclParsing.team_name_l) + '_' + str(red_card[0][2])
-            rclParsing.red_cards.append(player)
+            rclParsing.red_cards_l.append(player)
             print(player + " just received a red card!")
         elif red_card[0][1] == 'r':
             player = str(rclParsing.team_name_r) + '_' + str(red_card[0][2])
-            rclParsing.red_cards.append(player)
+            rclParsing.red_cards_r.append(player)
             print(player + " just received a red card!")
 
 
+    def yellow_card_status(self, info):
+        if info == "l":
+            return len(rclParsing.yellow_cards_l)
+        elif info == "r":
+            return len(rclParsing.yellow_cards_r)
+        elif info == "total":
+            return len(rclParsing.yellow_cards_l) + len(rclParsing.yellow_cards_r)
+        elif info == "players":
+            yellow_cards = []
+            for player in rclParsing.yellow_cards_l:
+                yellow_cards.append(player)
+            for player in rclParsing.yellow_cards_r:
+                yellow_cards.append(player)
+            return yellow_cards
+
+
+    def red_card_status(self, info):
+        if info == "l":
+            return len(rclParsing.red_cards_l)
+        elif info == "r":
+            return len(rclParsing.red_cards_r)
+        elif info == "total":
+            return len(rclParsing.red_cards_l) + len(rclParsing.red_cards_r)
+        elif info == "players":
+            red_cards = []
+            for player in rclParsing.red_cards_l:
+                red_cards.append(player)
+            for player in rclParsing.red_cards_r:
+                red_cards.append(player)
+            return red_cards
+    
+
     def game_has_ended(self):
         rclParsing.is_game_end = True
+
+
+
 '''
 rcl_Parser = rclParsing()
 rcl_Parser.strParsing("0,23	Recv CYRUS2019_1: (init CYRUS2019 (version 14) (goalie))")

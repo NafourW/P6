@@ -10,7 +10,7 @@ pathToFile = os.getcwd()
 path = Path(pathToFile).parent
 sys.path.insert(1, str(path))
 
-from parsers.rclParser import rclParsing
+from parsers.rclParser_Old import rclParsing
 from parsers.rcgParser import rcgParsing
 from readWriteFiles import ReadWriteLogFiles
 

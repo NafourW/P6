@@ -11,13 +11,6 @@ class ReadWriteLogFiles:
     t2_ball_possesion = []
     ball_location_history = []
 
-    rcg_parsed_strings = []
-    rcg_is_read = False
-    
-    # .rcl variables
-    rcl_parsed_strings = []
-    rcl_is_read = False
-
 
     def multiThreadRWFiles(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
@@ -47,20 +40,12 @@ class ReadWriteLogFiles:
                 else:
                     try:
                         counter += 1
-                        rcgParser.strParsing(line) #self.rcgParser.strParsing(line)
-
-                        # DISABLED
-                        # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
-                        """
-                        if self.rcl_is_read == True and len(self.rcl_parsed_strings) > 100:
-                            self.clear_rcg_parsed_strings()
-                            self.rcg_is_read = False
-                        """
+                        rcgParser.strParsing(line)
 
                         # If it is a frame save the location of the ball
                         if "show" in line:
-                            ball_info = rcgParser.get_ball_info(line) #self.rcgParser.get_ball_info(line)
-                            player_info = rcgParser.get_player_info(line) #self.rcgParser.get_player_info(line)
+                            ball_info = rcgParser.get_ball_info(line)
+                            player_info = rcgParser.get_player_info(line)
                             
                             self.ball_possesion_statistics(ball_info, player_info)
 
@@ -75,8 +60,6 @@ class ReadWriteLogFiles:
                             self.print_ball_possesion_statistics()
                             self.print_ball_location_statistics()
                         
-                        # DISABLED
-                        # self.rcg_parsed_strings.append(line)
                     except ParseException as e:
                         print(e)
                         break
@@ -102,15 +85,6 @@ class ReadWriteLogFiles:
                         counter += 1
                         rclParser.strParsing(line) #self.rclParser.strParsing(line)
 
-                        # DISABLED
-                        # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
-                        """
-                        if self.rcl_is_read == True and len(self.rcl_parsed_strings) > 100:
-                            self.clear_rcl_parsed_strings()
-                            self.rcl_is_read = False
-                        """
-                        # self.rcl_parsed_strings.append(line)
-
                     except ParseException as e:
                         print(e)
                         break
@@ -122,43 +96,12 @@ class ReadWriteLogFiles:
             print(error_line) 
 
 
-    def get_rcl_parsed_strings(self):
-        parsed_strings = self.rcl_parsed_strings
-        self.rcl_is_read = True
-        return parsed_strings
-    
-
-    def get_rcg_parsed_strings(self):
-        parsed_strings = self.rcg_parsed_strings
-        self.rcg_is_read = True
-        return parsed_strings
-
-
-    def clear_rcl_parsed_strings(self):
-        self.rcl_parsed_strings = []
-    
-
-    def clear_rcg_parsed_strings(self):
-        self.rcl_parsed_strings = []
-    
-
-    def get_rcl_is_read(self):
-        return self.rcl_is_read
-    
-
-    def get_rcg_is_read(self):
-        return self.rcg_is_read
-
-
-    def get_length(self):
-        return len(self.rcl_parsed_strings)
-
-
     def print_ball_location_statistics(self):
         ball_location_history_size = len(self.ball_location_history)
 
         # Make sure not to divide by 0
         if ball_location_history_size != 0:
+
             print("Ball on Left side of field percentage: %.0f%%" 
                 % float((self.ball_location_history.count("left") / len(self.ball_location_history) * 100)))
             print("Ball on Right side of field percentage: %.0f%%" 
@@ -183,6 +126,7 @@ class ReadWriteLogFiles:
         
         # Save who possesed the ball
         if player_possesing is not None:
+
             # If the player possesing the ball is from team 1
             if player_possesing <= 11:
                 self.t1_ball_possesion.append("team1")
@@ -214,6 +158,7 @@ class ReadWriteLogFiles:
                 
                 # If a player is within 5 units of the ball and closer than any other
                 if distance <= 10 and distance < closest_distance: 
+
                     closest_distance = distance
                     player_possesing = player_number
         

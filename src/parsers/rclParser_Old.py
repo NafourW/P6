@@ -136,7 +136,7 @@ class rclParsing:
 
 
 
-        command = initialization | action | message | SkipTo()
+        command = initialization | action | message # | SkipTo()
         line = command
 
         return line.parseString(rcl_string)

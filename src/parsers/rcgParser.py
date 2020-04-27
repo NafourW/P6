@@ -79,6 +79,9 @@ class rcgParsing:
         counter = 1
         for player in parsed_players:
             body_info = player[1]
+            view_mode = player[2]
+            stamina = player[3]
+
             player_info[str(counter)] = {
             "side" : player[0][0],
             "unum" : player[0][1],
@@ -89,7 +92,14 @@ class rcgParsing:
             "vel_x" : body_info[4],
             "vel_y" : body_info[5],
             "body_angle" : body_info[6],
-            "head_angle" : body_info[7]}
+            "head_angle" : body_info[7],
+            "view_quality" : view_mode[1],
+            "view_width" : view_mode[2],
+            "stamina" : stamina[1],
+            "stamina_effort" : stamina[2],
+            "stamina_recovery" : stamina[3],
+            "stamina_capacity" : stamina[4]
+            }
             
             counter += 1
 

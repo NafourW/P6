@@ -225,3 +225,14 @@ class ReadWriteLogFiles:
                     distance[compare_player_number] = sqrt(pow1 + pow2)
 
         return distance
+
+    def get_stamina_of_players(self, player_info):
+        stamina = {}
+
+        for player_number in range(1, 23):
+            stamina[str(player_number)] = [
+                player_info[str(player_number)]["stamina"], 
+                player_info[str(player_number)]["stamina_capacity"]
+            ]
+
+        return stamina

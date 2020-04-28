@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import pandas as pd
 import time
+import json
 import os
 import re
 
@@ -13,7 +14,7 @@ class modelSetup:
         start_training = time.time()
 
         # Train the model with the given(sent) text corpus
-        model = Word2Vec(sent, min_count=1, size=100, workers=4, window=4, sg=0)
+        model = Word2Vec(sent, min_count=1, size=22, workers=4, window=2, sg=1)
 
         end_training = time.time()
         print('     ..Total time (s) for preparing data = ' + str(end_training - start_training))
@@ -25,22 +26,15 @@ class modelSetup:
 
 
     def dataManipulation():
-        with open("logfiles/test_c.rcl", "r") as file:
+        with open("output.txt", "r") as file:
             listOfLine = []
-            listOfList = []
-            counter = 0
+
             for line in file:
-                l = re.split(r"[\t \n ( ) ' , :]+", line)
-                print(l)
-                listOfLine.append(l)
-             
-                counter += 1
-
-                print("Lines loaded: " + str(counter), end="\r")
-        
-        print("Lines loaded: " + str(counter))
-        
-
+                res = re.split("[\D ]", line)
+                print(res)
+                listOfLine.append(res)
+            
+       
         modelSetup.train_model(listOfLine)
     
     def loadModel():
@@ -63,7 +57,7 @@ class modelSetup:
         print('     ..Done loading model\n')
 
         print(df)
-        print(model.wv.most_similar('bye',topn=10))
+        print(model.wv.most_similar('8',topn=3))
         
 t = modelSetup.dataManipulation()
 q = modelSetup.loadModel()

@@ -1,18 +1,19 @@
 from threading import Thread
 from rclParser import rclParsing
-from rcgParser import rcgParsing
+from parsers.rcgParser import rcgParsing
 from pyparsing import ParseException
 from math import sqrt
 import heapq
 import os
 
 class ReadWriteLogFiles:
-    rcg_parsed_strings = []
-    rcl_parsed_strings = []
-    is_read = False
+    # Statistics
+    ball_location_history = []
+    t1_ball_possesion = []
+    t2_ball_possesion = []
 
+    # Word2Vec
     w2vList = []
-
 
     # parsers
     rcgParser = rcgParsing()
@@ -27,17 +28,14 @@ class ReadWriteLogFiles:
         
 
     def readLogFileRCG(self):
-        with open("logfiles/incomplete.rcg", "r") as file:
+        with open("logfiles/" + self.rcg_file, "r") as file:
             counter = 0
             line = file.readline()
-            rcgParser = rcgParsing()
             
             while True:
                 counter += 1
 
-                if line is "":
-                    pass
-                elif rcgParser.is_game_end == True:
+                if self.rcgParser.is_game_end == True:
                     break
                 else:
                     try:
@@ -70,7 +68,7 @@ class ReadWriteLogFiles:
                             elif float(ball_info["pos_x"]) < 0:
                                 self.ball_location_history.append("right")
                         
-                        # Every 1000 frames, print statistics
+                        # Every 100 frames, print statistics
                         if counter % 100 == 0:
                             self.print_ball_possesion_statistics()
                             self.print_ball_location_statistics()
@@ -92,30 +90,18 @@ class ReadWriteLogFiles:
 
 
     def readLogFileRCL(self):
-        with open("logfiles/incomplete.rcl", "r") as file:
+        with open("logfiles/" + self.rcl_file, "r") as file:
             counter = 0
             line = file.readline()
-            rclParser = rclParsing()
             
             while True:
                 counter += 1
 
-                if line is "":
-                    pass
-                elif rclParser.is_game_end == True:
+                if self.rclParser.is_game_end == True:
                     break
                 else:
                     try:
-                        rclParser.strParsing(line)
-
-                        # A line buffer of 100 so we do not overflow the "rcl_parsed_strings" variable
-                        if self.is_read == True and len(self.rcl_parsed_strings) > 100:
-                            print("Cleared")
-                            self.clear_parsed_strings()
-                            self.is_read = False
-                        
-                        self.rcl_parsed_strings.append(line)
-
+                        self.rclParser.strParsing(line)
                     except ParseException as e:
                         print(e)
                         break
@@ -126,22 +112,15 @@ class ReadWriteLogFiles:
             error_line = line if line else "No errors while parsing rcl file"
             print(error_line) 
 
+    def print_ball_location_statistics(self):
+        ball_location_history_size = len(self.ball_location_history)
 
-    def get_rcl_parsed_strings(self):
-        parsed_strings = self.rcl_parsed_strings
-        self.is_read = True
-        return parsed_strings
-
-    def clear_parsed_strings(self):
-        self.rcl_parsed_strings = []
-    
-    def get_is_read(self):
-        return self.is_read
-
+        # Make sure not to divide by 0
+        if ball_location_history_size != 0:
             print("Ball on Left side of field percentage: %.0f%%" 
-                % float((self.ball_location_history.count("left") / len(self.ball_location_history) * 100)))
+                % float((self.ball_location_history.count("left") / ball_location_history_size * 100)))
             print("Ball on Right side of field percentage: %.0f%%" 
-                % float((self.ball_location_history.count("right") / len(self.ball_location_history) * 100)))
+                % float((self.ball_location_history.count("right") / ball_location_history_size * 100)))
             print("")
 
 
@@ -257,7 +236,6 @@ class ReadWriteLogFiles:
             newList.append(list(top3.keys())[:3])
             ReadWriteLogFiles.w2vList.append(newList)
             #print(ReadWriteLogFiles.w2vList)
-
         '''
         with open('output.txt', 'w') as f:
             f.write(str(ReadWriteLogFiles.w2vList))

@@ -5,6 +5,8 @@ from pyparsing import ParseException
 from math import sqrt
 import heapq
 import os
+from gensim.models import Word2Vec
+
 
 class ReadWriteLogFiles:
     # Statistics
@@ -13,6 +15,9 @@ class ReadWriteLogFiles:
     t2_ball_possesion = []
 
     # Word2Vec
+    last_player_with_ball = -1
+    next_player = -1
+    success = []
     w2vList = []
 
     # parsers
@@ -25,6 +30,14 @@ class ReadWriteLogFiles:
 
         Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
+
+    
+    def inference_run(self, rcg_file, rcl_file):
+        self.rcg_file = rcg_file
+        self.rcl_file = rcl_file
+
+        Thread(target = self.inferenceRCL).start()
+        Thread(target = self.inferenceRCG).start()
         
 
     def readLogFileRCG(self):
@@ -46,47 +59,48 @@ class ReadWriteLogFiles:
                             else:
                                 break
                         '''
-
-                        counter += 1
                         self.rcgParser.strParsing(line)
 
                         # If it is a frame save the location of the ball
                         if "show" in line:
+
                             ball_info = self.rcgParser.get_ball_info(line)
                             player_info = self.rcgParser.get_player_info(line)
 
+                            player_Ball = self.get_player_number_possesing_ball(ball_info, player_info)
+
+                            # TRAINING
+                            self.Word2VecTextCorpus(ball_info, player_info, player_Ball)
+
+                            # Statistics
                             self.ball_possesion_statistics(ball_info, player_info)
 
-                            player_Ball = self.get_player_number_possesing_ball(ball_info, player_info)
-                            
+                            # Every 100 frames, print statistics
+                            if counter % 100 == 0:
+                                self.print_ball_possesion_statistics()
+                                self.print_ball_location_statistics()
 
-                            self.Word2VecTextCorpus(ball_info, player_info, player_Ball)
-                            
                             # Find out whether the ball is on the left or right side of the playing field
                             if float(ball_info["pos_x"]) > 0:
                                 self.ball_location_history.append("left")
                             elif float(ball_info["pos_x"]) < 0:
                                 self.ball_location_history.append("right")
-                        
-                        # Every 100 frames, print statistics
-                        if counter % 100 == 0:
-                            self.print_ball_possesion_statistics()
-                            self.print_ball_location_statistics()
-                        
+                    
                     except ParseException as e:
                         print(e)
                         break
 
                     line = file.readline()
 
+            # TRAINING
             with open('output.txt', 'w') as f:
                 for index in ReadWriteLogFiles.w2vList:
                     f.write(str(index) + '\n')
-        
+            
             print("Lines parsed: " + str(counter))
             error_line = line if line else "No errors while parsing rcg file"
 
-            print(error_line) 
+            print(error_line)
 
 
     def readLogFileRCL(self):
@@ -110,7 +124,58 @@ class ReadWriteLogFiles:
         
             print("Lines parsed: " + str(counter))
             error_line = line if line else "No errors while parsing rcl file"
-            print(error_line) 
+            print(error_line)
+
+    
+    def inferenceRCG(self):
+        with open("logfiles/" + self.rcg_file, "r") as file:
+            line = file.readline()
+            
+            while True:
+
+                if self.rcgParser.is_game_end == True:
+                    break
+                else:
+                    self.rcgParser.strParsing(line)
+
+                    # If it is a frame save the location of the ball
+                    if "show" in line:
+
+                        ball_info = self.rcgParser.get_ball_info(line)
+                        player_info = self.rcgParser.get_player_info(line)
+
+                        player_Ball = self.get_player_number_possesing_ball(ball_info, player_info)
+                        
+                        # If the player with the ball is not the same as last frame
+                        if player_Ball is not None and self.last_player_with_ball != player_Ball:
+
+                            # If the player with the ball is the one W2V guessed 
+                            if str(player_Ball) == self.next_player:
+                                self.success.append(1)
+                                print("Correct!")
+                            print("Frame: " + str(self.rcgParser.current_frame))
+                            print("Player: " + str(player_Ball) + " has the ball")
+
+                            most_similar = self.w2v_most_similar(player_Ball)[0]
+                            print("Most similar : " + str(most_similar))
+                            self.next_player = most_similar[0]
+                    
+                        self.last_player_with_ball = player_Ball
+
+                    line = file.readline()
+
+
+    def inferenceRCL(self):
+        with open("logfiles/" + self.rcl_file, "r") as file:
+            line = file.readline()
+            
+            while True:
+                if self.rclParser.is_game_end == True:
+                    break
+                else:
+                    self.rclParser.strParsing(line)
+                    line = file.readline()
+
 
     def print_ball_location_statistics(self):
         ball_location_history_size = len(self.ball_location_history)
@@ -244,3 +309,9 @@ class ReadWriteLogFiles:
                     #f.seek(0)
                     f.write(str(_string) + '\n')
         '''
+
+
+    def w2v_most_similar(self, player_number):
+        if player_number is not None:
+            model = Word2Vec.load('trainedModel/word2vec.model')
+            return model.wv.most_similar(str(player_number),topn=1)

@@ -8,6 +8,7 @@ class rclParsing:
     team_name_l = None
     team_name_r = None
     player_name = None
+    latest_player_kick = []
     kick_off_counter = 0
     kick_in_counter_l = 0
     kick_in_counter_r = 0
@@ -157,6 +158,12 @@ class rclParsing:
         elif action[2][0] == rclParsing.team_name_r:
             rclParsing.team_r_buffer.append(player_action)
 
+        # if the player performs 'kick', store the player name and the frame
+        if action[3][0] == 'kick':
+            if len(rclParsing.latest_player_kick) > 10:
+                rclParsing.latest_player_kick.remove(rclParsing.latest_player_kick[0])
+            rclParsing.latest_player_kick.append([rclParsing.current_frame, rclParsing.player_name])
+
 
     def kick_in_counter(self, kick_in):
         if kick_in[0][1] == 'l':
@@ -194,10 +201,10 @@ class rclParsing:
 
     def goal_announce(self, goal):
         if goal[0][1] == 'l':
-            print(rclParsing.team_name_l + " has scored!")
+            print(str(rclParsing.team_name_l) + " has scored!")
 
         elif goal[0][1] == 'r':
-            print(rclParsing.team_name_r + " has scored!")
+            print(str(rclParsing.team_name_r) + " has scored!")
 
 
     def get_yellow_card(self, yellow_card):
@@ -261,15 +268,17 @@ class rclParsing:
 
 '''
 rcl_Parser = rclParsing()
+662,0	Recv CYRUS2018_11: (kick 78.092 9.12467)(turn_neck 30)(say "Eu6*PzrUsE")
+rcl_Parser.strParsing('''''')
+print(rcl_Parser.latest_player_kick)
+rcl_Parser.strParsing("")
 rcl_Parser.strParsing("0,23	Recv CYRUS2019_1: (init CYRUS2019 (version 14) (goalie))")
 rcl_Parser.strParsing("0,45	Recv HELIOS2019_1: (init HELIOS2019 (version 15) (goalie))")
-#rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)")
-#rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(kick 98 0.744628)")
+rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)")
+rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(kick 98 0.744628)")
 rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(turn_neck -45)")
 rcl_Parser.strParsing("91,0	Recv HELIOS2019_4: (move 100 0.744628)(turn_neck -45)")
 
-#print(rcl_Parser.team_name_l)
-#print(rcl_Parser.team_name_r)
 rcl_Parser.strParsing("2447,0	Recv HELIOS2019_5: (dash 85)(turn_neck 130)(attentionto our 9)")
 rcl_Parser.strParsing("2447,0	Recv HELIOS2019_3: (turn 25.363)(turn_neck -63)(change_view normal)(attentionto our 9)")
 rcl_Parser.strParsing("2447,0	Recv HELIOS2019_2: (turn -169.549)(turn_neck -45)(attentionto our 9)")
@@ -280,7 +289,4 @@ rcl_Parser.strParsing("2447,0	Recv CYRUS2019_10: (turn 0)(turn_neck -123)(attent
 rcl_Parser.strParsing("2447,0	Recv CYRUS2019_11: (turn 56.89)(turn_neck -47)(attentionto our 7)")
 print(rcl_Parser.team_l_buffer)
 print(rcl_Parser.team_r_buffer)
-
-
-#rcl_Parser.strParsing("")
 '''

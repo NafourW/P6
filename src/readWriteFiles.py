@@ -4,6 +4,8 @@ from parsers.rcgParser import rcgParsing
 from pyparsing import ParseException
 import os
 from math import sqrt
+from time import sleep
+
 
 class ReadWriteLogFiles:
     # .rcg variables
@@ -16,6 +18,14 @@ class ReadWriteLogFiles:
     rcgParser = rcgParsing()
     rclParser = rclParsing()
 
+
+    # global variables
+    score_alarm = 0
+    latest_player_possessing_ball = []
+    score_player = None  # name of the player who got the latest goal
+    scored_players = []
+    scored_players_frames = []
+
     def multiThreadRWFiles(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
         self.rcl_file = rcl_file
@@ -23,20 +33,21 @@ class ReadWriteLogFiles:
         Thread(target = self.readLogFileRCL).start()
         Thread(target = self.readLogFileRCG).start()
         
-
-        while self.rcgParser.current_frame != self.rclParser.current_frame:
-            if self.rcgParser.current_frame > self.rclParser.current_frame:
+        '''
+        while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
+            if int(self.rcgParser.current_frame) > int(self.rclParser.current_frame):
                 print("rcg is too fast")
-            elif self.rcgParser.current_frame < self.rclParser.current_frame:
+            elif int(self.rcgParser.current_frame) < int(self.rclParser.current_frame):
                 print("rcl is too fast")
+        '''
         
-
 
     def readLogFileRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
             counter = 0
             line = file.readline()
-
+            self.score_alarm = self.rcgParser.goal_alarm
+            sleep(5)
             while True:
 
                 if self.rcgParser.is_game_end == True:
@@ -53,6 +64,15 @@ class ReadWriteLogFiles:
 
                         counter += 1
                         self.rcgParser.strParsing(line)
+
+                        if (len(self.latest_player_possessing_ball) > 10):
+                            self.latest_player_possessing_ball.remove(self.latest_player_possessing_ball[0])
+
+                        # When goal detected
+                        '''
+                        if self.rcgParser.goal_alarm == True:
+                            self.rcgParser.goal_alarm = False
+                        '''
 
                         # If it is a frame save the location of the ball
                         if "show" in line:
@@ -75,12 +95,15 @@ class ReadWriteLogFiles:
                             self.print_ball_possesion_statistics()
                             self.print_ball_location_statistics()
                         
+                        # Detect for player scoring
+                        if self.rcgParser.goal_alarm > self.score_alarm:
+                            self.get_player_scored()
+
                     except ParseException as e:
                         print(e)
                         break
 
                     line = file.readline()
-        
             print("Lines parsed: " + str(counter))
             error_line = line if line else "No errors while parsing rcg file"
             print(error_line) 
@@ -182,6 +205,13 @@ class ReadWriteLogFiles:
                 if distance <= 2 and distance < closest_distance: 
                     closest_distance = distance
                     player_possesing = player_number
+        
+        # Store the player who last possessed the ball within a specific frame
+        if player_possesing is not None:
+            if int(player_possesing) > 11:
+                self.latest_player_possessing_ball.append([self.rcgParser.current_frame, str(self.rclParser.team_name_r) + '_' + str(int(player_possesing) - 11)])
+            elif int(player_possesing) < 12:
+                self.latest_player_possessing_ball.append([self.rcgParser.current_frame, str(self.rclParser.team_name_l) + '_' + str(player_possesing)])
 
         return player_possesing
 
@@ -236,3 +266,49 @@ class ReadWriteLogFiles:
             ]
 
         return stamina
+
+
+    def get_player_scored(self):
+        last_kicker = None
+
+        if (len(self.rclParser.latest_player_kick) > 0) and (len(self.latest_player_possessing_ball) > 0):
+
+            score_player_found = False
+            while score_player_found == False:
+
+                i = (len(self.rclParser.latest_player_kick) - 1)
+                j = (len(self.latest_player_possessing_ball) - 1)
+
+                if self.rclParser.latest_player_kick[i][0] == self.latest_player_possessing_ball[j][0]:
+                    if self.rclParser.latest_player_kick[i][1] == self.latest_player_possessing_ball[j][1]:
+                        self.score_player = self.latest_player_possessing_ball[j][1]
+                        self.scored_players.append(self.score_player)
+                        self.scored_players_frames.append(self.rcgParser.goal_frame)
+                        #print("SCORE PLAYER: " + self.score_player + " (ALL GOOD)")
+                        score_player_found = True
+                        self.score_alarm += 1
+                    else:
+                        self.latest_player_possessing_ball.remove(self.latest_player_possessing_ball[j])
+                else:
+                    if int(self.rclParser.current_frame) >= int(self.rcgParser.goal_frame):
+                        last_kicker = self.rclParser.latest_player_kick[i]
+                        rcg_index = (len(self.latest_player_possessing_ball) - 1)
+                        while rcg_index > 0:
+                            if last_kicker[0] == self.latest_player_possessing_ball[rcg_index][0]:
+                                if last_kicker[1] == self.latest_player_possessing_ball[rcg_index][1]:
+                                    self.score_player = self.latest_player_possessing_ball[rcg_index][1]
+                                    self.scored_players.append(self.score_player)
+                                    self.scored_players_frames.append(self.rcgParser.goal_frame)
+                                    #print("SCORE PLAYER: " + self.score_player)
+                                    score_player_found = True
+                                    self.score_alarm += 1
+                                    rcg_index = 0
+                                else:
+                                    rcg_index -= 1
+                            else:
+                                rcg_index -= 1
+
+                    if self.rclParser.latest_player_kick[i][0] < self.latest_player_possessing_ball[j][0]:
+                        sleep(2)
+                    elif self.rclParser.latest_player_kick[i][0] > self.latest_player_possessing_ball[j][0]:
+                        print("score_player_found: " + str(score_player_found)) # cannot find any player who scored

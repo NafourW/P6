@@ -14,3 +14,4 @@ if __name__ == "__main__":
     rwlf = rwlf()
     rwlf.multiThreadRWFiles("incomplete.rcg", "incomplete.rcl")
     #rwlf.multiThreadRWFiles("20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcg", "20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcl")
+    #rwlf.multiThreadRWFiles("test.rcg", "test.rcl")

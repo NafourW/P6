@@ -7,6 +7,7 @@ import heapq
 import os
 from math import sqrt
 from time import sleep
+from gensim.models import Word2Vec
 
 
 class ReadWriteLogFiles:
@@ -32,6 +33,7 @@ class ReadWriteLogFiles:
     score_player = None  # name of the player who got the latest goal
     scored_players = []
     scored_players_frames = []
+
 
     def multiThreadRWFiles(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
@@ -162,52 +164,66 @@ class ReadWriteLogFiles:
             error_line = line if line else "No errors while parsing rcl file"
             print(error_line)
 
-    
+
     def inferenceRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
             line = file.readline()
             
             while True:
+                if self.rcgParser.is_game_end == True:
+                    break
+                else:
+                    self.rcgParser.strParsing(line)
 
+                    # If it is a frame save the location of the ball
+                    if "show" in line:
+
+                        ball_info = self.rcgParser.get_ball_info(line)
+                        player_info = self.rcgParser.get_player_info(line)
+
+                        player_Ball = self.get_player_number_possesing_ball(ball_info, player_info)
+                        
+                        # If the player with the ball is not the same as last frame
+                        if player_Ball is not None and self.last_player_with_ball != player_Ball:
+
+                            # If the player with the ball is the one W2V guessed 
+                            if str(player_Ball) == self.next_player:
+                                self.success.append(1)
+                                print("Correct!")
+
+                            print("Frame: " + str(self.rcgParser.current_frame))
+                            print("Player: " + str(player_Ball) + " has the ball")
+
+                            most_similar = self.w2v_most_similar(player_Ball)[0]
+                            print("Most similar : " + str(most_similar))
+                            self.next_player = most_similar[0]
+                    
+                        self.last_player_with_ball = player_Ball
+
+                    line = file.readline()
+
+    
+    def inferenceRCL(self):
+        with open("logfiles/" + self.rcl_file, "r") as file:
+            line = file.readline()
+            
+            while True:
+                if self.rclParser.is_game_end == True:
+                    break
+                else:
+                    self.rclParser.strParsing(line)
+                    line = file.readline()
+
+    
     def print_ball_location_statistics(self):
         ball_location_history_size = len(self.ball_location_history)
 
         # Make sure not to divide by 0
         if ball_location_history_size != 0:
-                    line = file.readline()
-                    self.rclParser.strParsing(line)
-                else:
-                    break
-                if self.rclParser.is_game_end == True:
-            
-            while True:
-            line = file.readline()
-        with open("logfiles/" + self.rcl_file, "r") as file:
-    def inferenceRCL(self):
-
-                    line = file.readline()
-
-                        self.last_player_with_ball = player_Ball
-                    
-                            self.next_player = most_similar[0]
-                            most_similar = self.w2v_most_similar(player_Ball)[0]
-                            print("Most similar : " + str(most_similar))
-
-                            print("Player: " + str(player_Ball) + " has the ball")
-                            print("Frame: " + str(self.rcgParser.current_frame))
-                                self.success.append(1)
-                                print("Correct!")
-                            if str(player_Ball) == self.next_player:
-
-                            # If the player with the ball is the one W2V guessed 
-                        if player_Ball is not None and self.last_player_with_ball != player_Ball:
-                        # If the player with the ball is not the same as last frame
-                        
-
             print("Ball on Left side of field percentage: %.0f%%" 
-                % float((self.ball_location_history.count("left") / len(self.ball_location_history) * 100)))
+                % float((self.ball_location_history.count("left") / ball_location_history_size * 100)))
             print("Ball on Right side of field percentage: %.0f%%" 
-                % float((self.ball_location_history.count("right") / len(self.ball_location_history) * 100)))
+                % float((self.ball_location_history.count("right") / ball_location_history_size * 100)))
             print("")
 
 
@@ -313,6 +329,7 @@ class ReadWriteLogFiles:
 
         return distance
 
+
     def get_stamina_of_players(self, player_info):
         stamina = {}
 
@@ -369,6 +386,8 @@ class ReadWriteLogFiles:
                         sleep(2)
                     elif self.rclParser.latest_player_kick[i][0] > self.latest_player_possessing_ball[j][0]:
                         print("score_player_found: " + str(score_player_found)) # cannot find any player who scored
+
+
     def Word2VecTextCorpus(self, ball_info, player_info, player_Ball):
         newList = []
 

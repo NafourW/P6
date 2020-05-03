@@ -7,7 +7,8 @@ class rcgParsing:
     team_name_2 = None
     team_score_1 = 0
     team_score_2 = 0
-    player_n = 0
+    goal_alarm = 0  # Turns to 'True' when a player scores
+    goal_frame = 0
 
     def get_ball_info(self, line):
         left_p = Literal("(").suppress()
@@ -80,6 +81,9 @@ class rcgParsing:
         counter = 1
         for player in parsed_players:
             body_info = player[1]
+            view_mode = player[2]
+            stamina = player[3]
+
             player_info[str(counter)] = {
             "side" : player[0][0],
             "unum" : player[0][1],
@@ -90,7 +94,14 @@ class rcgParsing:
             "vel_x" : body_info[4],
             "vel_y" : body_info[5],
             "body_angle" : body_info[6],
-            "head_angle" : body_info[7]}
+            "head_angle" : body_info[7],
+            "view_quality" : view_mode[1],
+            "view_width" : view_mode[2],
+            "stamina" : stamina[1],
+            "stamina_effort" : stamina[2],
+            "stamina_recovery" : stamina[3],
+            "stamina_capacity" : stamina[4]
+            }
             
             counter += 1
 
@@ -110,10 +121,13 @@ class rcgParsing:
         # Playmode
         # Playmode list
         play_mode_list = (Word(" play_on") ^ Word(" time_over") ^ Word(" free_kick_r") ^ Word(" free_kick_l") ^ Word(" kick_in_l") ^ Word(" kick_in_r") ^ Word(" foul_charge_r") ^ Word(" foul_charge_l") ^ Word(" kick_off_l") ^ Word(" kick_off_r") ^ Word(" corner_kick_l") ^ Word(" corner_kick_r") ^ Word(" offside_r") ^ Word(" offside_l") ^ Word(" foul_charge_l") ^ Word(" foul_charge_r") ^ Word(" goal_kick_l") ^ Word(" goal_kick_r"))
-        play_mode = Word("playmode ") + Word(nums) + play_mode_list
+        play_mode = (Word("playmode ") + Word(nums) + play_mode_list).setParseAction(rcgParsing.goal_notification)
+
+        # Teamname
+        team_name = Combine(Word(alphanums) + Optional("_" + Word(alphanums)))
 
         # Teamscore
-        team_score = Word("team ") + Word(nums) + Word(alphanums) + Word(alphanums) + Word(nums) * 2
+        team_score = Word("team ") + Word(nums) + team_name + team_name + Word(nums) * 2
 
         # Frame and ball information
         show_frame = Word("show ") + frame_number.setParseAction(rcgParsing.get_current_frame)
@@ -171,7 +185,14 @@ class rcgParsing:
 
     def get_current_frame(self, show_frame):
         rcgParsing.current_frame = show_frame[0]
-        #print(rcgParsing.current_frame)       
+        #print(rcgParsing.current_frame)
+
+
+    def goal_notification(self, play_mode):
+        if (play_mode[2] == "goal_r") or (play_mode[2] == "goal_l"):
+            rcgParsing.goal_frame = int(play_mode[1])
+            rcgParsing.goal_alarm += 1
+
 
     def get_team_result(self, teamscore_result):
         if rcgParsing.team_name_1 is not None:
@@ -199,11 +220,12 @@ class rcgParsing:
             print(rcgParsing.team_name_1 + "!")
         elif rcgParsing.team_score_2 > rcgParsing.team_score_1:
             print(rcgParsing.team_name_2 + "!")
-        
         rcgParsing.is_game_end = True
 
 
-
+#rcg_Parser.strParsing('''(playmode 1568 free_kick_l)''')
+#rcg_Parser.strParsing('''(playmode 1567 foul_charge_r)''')
+#rcg_Parser.strParsing('''(playmode 1682 goal_l)''')
 #rcg_Parser = rcgParsing()
 #rcg_Parser.strParsing('''''')
 #rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")''')

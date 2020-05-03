@@ -3,6 +3,12 @@ from pyparsing import Word, Combine, ZeroOrMore, Optional, Literal, Suppress, Gr
 
 class rclParsing:
     is_game_end = False
+    team_name_l = None
+    team_name_r = None
+    player_name = None
+    kick_off_counter = 0
+    yellow_cards = []
+    red_cards = []
 
     def get_initialization_info(self, line):
         # General
@@ -13,6 +19,7 @@ class rclParsing:
         coach = "Coach"
         parameterContent = Combine(ZeroOrMore(Word(alphanums) | " "))
         parameter = OneOrMore(lp + parameterContent + rp)
+
 
         # initialization
         teamName = Combine(Word(alphanums) + Optional("_" + Word(alphanums)))
@@ -40,12 +47,13 @@ class rclParsing:
         parameter = OneOrMore(lp + parameterContent + rp)
 
         # initialization
-        initialize = "init"
-        teamName = Word(alphanums)
-        playerName = Group(teamName + Suppress("_") + (integer | Literal(coach)))
+        teamName = Combine(Word(alphanums) + Optional("_" + Word(alphanums)))
+        #playerName needs to be taken care of in AST, as teams with '_' in their names causes confusions
+        playerName = (Group(Word(alphanums) + "_" + (integer | Literal(coach)) + Optional("_" + (integer | Literal(coach))))).setParseAction(rcl_Parser.get_player)
         goalieIndicator = lp + "goalie" + rp
-        initCommand = lp + initialize + teamName + parameter + ZeroOrMore(goalieIndicator) + rp
-        initialization = time + receive + playerName + Suppress(":") + initCommand
+        initCommand = (lp + "init" + teamName + parameter + ZeroOrMore(goalieIndicator) + rp).setParseAction(rclParsing.get_team_name)
+        initialization = time + receive + teamName + SkipTo(":", include=True) + initCommand
+        #initialization = time + receive + playerName + Suppress(":") + initCommand
 
         # message
         drop_ball = Group("drop_ball")
@@ -60,7 +68,7 @@ class rclParsing:
         half_time = Group("half_time")
         first_half_over = Group("first_half_over")
         time_extended = Group("time_extended")
-        goal = Group("goal" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)
+        goal = (Group("goal" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)).setParseAction(rcl_Parser.goal_announce)
         goal_kick = Group("goal_kick" + Suppress("_") + (Literal('l') | Literal('r')))
         goalie_catch_ball = Group("goalie_catch_ball" + Suppress("_") + (Literal('l') | Literal('r')))
         catch_fault = Group("catch_fault" + Suppress("_") + (Literal('l') | Literal('r')))
@@ -80,8 +88,8 @@ class rclParsing:
         foul_multiple_attack = Group("foul_multiple_attack" + Suppress("_") + (Literal('l') | Literal('r')))
         foul_ballout = Group("foul_ballout" + Suppress("_") + (Literal('l') | Literal('r')))
         back_pass = Group("back_pass" + Suppress("_") + (Literal('l') | Literal('r')))
-        yellow_card = Group("yellow_card" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)
-        red_card = Group("red_card" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)
+        yellow_card = (Group("yellow_card" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)).setParseAction(rcl_Parser.get_yellow_card)
+        red_card = (Group("red_card" + Suppress("_") + (Literal('l') | Literal('r')) + Suppress("_") + integer)).setParseAction(rcl_Parser.get_red_card)
         illegal_defense = Group("illegal_defense" + Suppress("_") + (Literal('l') | Literal('r')))
         pause = Group("pause")
         time_up = Group("time_up")
@@ -118,7 +126,7 @@ class rclParsing:
 
         act_player = kick | long_kick | goalieCatch | pointto | tackle | catch | move | dash | turn | turn_neck | change_view | attentionto | say | bye
         act_coach = change_player_type | say_coach_freeform | say_coach_info | eye_on
-        actCommand = OneOrMore(lp + (act_player | act_coach) + rp)
+        actCommand = (OneOrMore(lp + (act_player | act_coach) + rp)).setParseAction(rcl_Parser.get_player_action)
 
         synch_see = Group(lp + "synch_see" + rp) + OneOrMore(Group(lp + parameterContent + Group(lp + parameterContent + rp) + rp))
 
@@ -126,19 +134,99 @@ class rclParsing:
         setupCommand = synch_see | team_graphic
         action = time + "Recv" + playerName + Suppress(":") + (actCommand | setupCommand)
 
-        command = initialization | action | message
+
+
+        command = initialization | action | message # | SkipTo()
         line = command
 
         return line.parseString(rcl_string)
 
+    def get_team_name(self, initCommand):
+        if rclParsing.team_name_l is not None:
+            rclParsing.team_name_r = ''  # convert from None to string
+            rclParsing.team_name_r = initCommand[1]
+        else:
+            rclParsing.team_name_l = ''  # convert from None to string
+            rclParsing.team_name_l = initCommand[1]
+
+    def game_has_begun(self, kick_off):
+        if rcl_Parser.kick_off_counter == 0:
+            if kick_off[0][1] == 'l':
+                print("The game just begun with a kick off from " + rcl_Parser.team_name_l)
+            elif kick_off[0][1] == 'r':
+                print("The game just begun with a kick off from " + rcl_Parser.team_name_r)
+            rcl_Parser.kick_off_counter += 1
+        elif rcl_Parser.kick_off_counter > 0:
+            if kick_off[0][1] == 'l':
+                print("And we continue from " + rcl_Parser.team_name_l)
+            elif kick_off[0][1] == 'r':
+                print("And we continue from " + rcl_Parser.team_name_r)
+            rcl_Parser.kick_off_counter += 1
+
+    def get_player(self, playerName):
+        player = ''
+        i = 0
+        while i < (len(playerName[0]) - 1):
+            player += playerName[0][i]
+            i += 1
+        
+        player += playerName[0][(len(playerName[0]) - 1)]
+        
+        if player in rcl_Parser.yellow_cards:
+            print(player + " needs to be careful, he just received a yellow card!")
+        elif player in rcl_Parser.red_cards:
+            print("What the hell is " + player + " doing? He already got a red card!")
+        else:
+            rcl_Parser.player_name = player
+
+    def get_player_action(self, actCommand):
+        a = 1
+        #print(actCommand)
+
+
+    def goal_announce(self, goal):
+        if goal[0][1] == 'l':
+            print(rclParsing.team_name_l + " has scored!")
+
+        elif goal[0][1] == 'r':
+            print(rclParsing.team_name_r + " has scored!")
+
+    def get_yellow_card(self, yellow_card):
+        if yellow_card[0][1] == 'l':
+            player = str(rcl_Parser.team_name_l) + '_' + str(yellow_card[0][2])
+            rcl_Parser.yellow_cards.append(player)
+            print("Well, that's a yellow card for " + player + "!")
+        elif yellow_card[0][1] == 'r':
+            player = str(rcl_Parser.team_name_r) + '_' + str(yellow_card[0][2])
+            rcl_Parser.yellow_cards.append(player)
+            print("Well, that's a yellow card for " + player + "!")
+
+    def get_red_card(self, red_card):
+        if red_card[0][1] == 'l':
+            player = str(rcl_Parser.team_name_l) + '_' + str(red_card[0][2])
+            rcl_Parser.red_cards.append(player)
+            print(player + " just received a red card!")
+        elif red_card[0][1] == 'r':
+            player = str(rcl_Parser.team_name_r) + '_' + str(red_card[0][2])
+            rcl_Parser.red_cards.append(player)
+            print(player + " just received a red card!")
+
     def game_has_ended(self):
         rclParsing.is_game_end = True
 
-    def game_has_begun(self):
-        print("Let's start the game!")
 
-# rcl_Parser = rclParsing()
-# print(rcl_Parser.strParsing("8000,0	(referee penalty_setup_r)"))
+rcl_Parser = rclParsing()
+#rcl_Parser.strParsing("0,23	Recv CYRUS2019_1: (init CYRUS2019 (version 14) (goalie))")
+#rcl_Parser.strParsing("0,45	Recv HELIOS2019_1: (init HELIOS2019 (version 15) (goalie))")
+#rcl_Parser.strParsing("2324,0	(referee yellow_card_l_2)")
+#rcl_Parser.strParsing("2324,0	(referee red_card_r_11)")
+#rcl_Parser.strParsing("5997,0	Recv HELIOS2019_9: (turn 0)(turn_neck 0)")
+#rcl_Parser.strParsing("")
+rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(turn_neck -45)")
+
+#rcl_Parser.strParsing("2542,0	(referee goal_r_1)")
+#print(rcl_Parser.strParsing("2542,0	(referee goal_r_1)"))
+#print(rcl_Parser.strParsing("8000,0	(referee penalty_setup_r)"))
 #print(type(rclParsing.strParsing('''0,370	Recv CYRUS2018_11: (turn 0)(turn_neck 0)  ''')))
 
 '''

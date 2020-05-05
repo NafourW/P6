@@ -127,10 +127,7 @@ class ReadWriteLogFiles:
                             if int(self.rcgParser.current_frame) >= int(self.rclParser.current_frame):
                                 break
                         counter += 1
-
-                        # Skip the lines where the game has not started yet    
-                        if line[0] != "0":
-                            self.rclParser.strParsing(line)
+                        self.rclParser.strParsing(line)
 
                     except ParseException as e:
                         print(e)

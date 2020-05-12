@@ -146,6 +146,82 @@ class ReadWriteLogFiles:
 
         with open("logfiles/" + self.rcg_file, "r") as file:
             line = file.readline()
+            self.score_alarm = self.rcgParser.goal_alarm
+
+            while True:
+                if self.rcgParser.is_game_end == True:
+                    break
+                else:
+                    try:
+                        while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
+                            if int(self.rcgParser.current_frame) <= int(self.rclParser.current_frame):
+                                break
+                        
+                        counter += 1
+                        self.rcgParser.strParsing(line)
+
+                        # What does this do? ...
+                        if (len(self.latest_player_possessing_ball) > 10):
+                            self.latest_player_possessing_ball.remove(self.latest_player_possessing_ball[0])
+
+                        # If it is a frame save the location of the ball
+                        if "show" in line:
+                            ball_info = self.rcgParser.get_ball_info(line)
+                            player_info = self.rcgParser.get_player_info(line)
+                            player_Ball = self.get_player_number_possesing_ball(ball_info, player_info)
+
+                            # TRAINING
+                            self.Word2VecTextCorpus(ball_info, player_info, player_Ball)
+
+                            # Record statistics
+                            self.ball_possesion_statistics(ball_info, player_info)
+                            self.record_ball_location(ball_info)
+                            
+                        # Every 100 lines, print statistics
+                        if counter % 100 == 0:
+                            self.print_ball_possesion_statistics()
+                            self.print_ball_location_statistics()
+                        
+                        # Detect for player scoring
+                        if self.rcgParser.goal_alarm > self.score_alarm:
+                            self.get_player_scored()
+
+                    line = file.readline()
+
+    
+    def inferenceRCL(self):
+        with open("logfiles/" + self.rcl_file, "r") as file:
+            line = file.readline()
+            
+            while True:
+                if self.rclParser.is_game_end == True:
+                    break
+                else:
+                    try:
+                        # Synchronize the reading of RCG and RCL files
+                        while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
+                            if int(self.rcgParser.current_frame) >= int(self.rclParser.current_frame):
+                                break
+                        counter += 1
+                        self.rclParser.strParsing(line)
+
+                    except ParseException as e:
+                        print(e)
+                        break
+
+                    line = file.readline()
+        
+            print("Lines parsed: " + str(counter))
+            error_line = line if line else "No errors while parsing rcl file"
+            print(error_line)
+
+
+    def inferenceRCG(self):
+        line_counter = 0
+        self.score_alarm = self.rcgParser.goal_alarm
+
+        with open("logfiles/" + self.rcg_file, "r") as file:
+            line = file.readline()
             
             while True:
                 if self.rcgParser.is_game_end == True:
@@ -415,3 +491,55 @@ class ReadWriteLogFiles:
             most_similar = self.w2v_most_similar(player_Ball)[0]
             print("Most similar : " + str(most_similar))
             self.next_player = most_similar[0]
+
+    def test_similarity_top3(self, player_Ball):
+        top3 =[]
+        # If the player with the ball is not the same as last frame
+        if player_Ball is not None and self.last_player_with_ball != player_Ball:
+            self.totalPases.append(1)
+            '''
+            # If the player with the ball is the one W2V guessed 
+            if str(player_Ball) == self.next_player:
+                self.success.append(1)
+                print("     [+] Correct!")
+            print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
+
+            most_similar = self.w2v_most_similar(player_Ball)[0]
+            print("Most similar : " + str(most_similar[0]))
+            self.next_player = most_similar[0]
+            '''
+            # If the player with the ball is the one W2V guessed 
+            if str(player_Ball) in self.next_players:
+            # for x in self.next_player[0]:
+            #     if str(player_Ball) == x:
+                self.success.append(1)
+                print("     [+] Correct!")
+            # print()
+            print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
+
+            most_similar = self.w2v_most_similar(player_Ball)[:3]
+            for e in most_similar:
+                top3.append(e[0])
+            print("Most similar : " + str(top3))
+            self.next_players = top3
+
+
+        self.last_player_with_ball = player_Ball
+
+
+    def test_similarity_single(self, player_Ball):
+        # If the player with the ball is not the same as last frame
+        if player_Ball is not None and self.last_player_with_ball != player_Ball:
+            self.totalPases.append(1)
+
+            # If the player with the ball is the one W2V guessed 
+            if str(player_Ball) == self.next_player:
+                self.success.append(1)
+                print("     [+] Correct!")
+            print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
+
+            most_similar = self.w2v_most_similar(player_Ball)[0]
+            print("Most similar : " + str(most_similar[0]))
+            self.next_player = most_similar[0]
+
+        self.last_player_with_ball = player_Ball

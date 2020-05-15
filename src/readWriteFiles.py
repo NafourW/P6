@@ -179,12 +179,12 @@ class ReadWriteLogFiles:
 
                             # TRAINING
                             #self.Word2VecTextCorpus(ball_info, player_info, player_Ball)
-                            self.Word2VecTextCorpus_v2(ball_info,player_info,player_Ball)
+                            #self.Word2VecTextCorpus_v2(ball_info,player_info,player_Ball)
                             
                             # Guesses for pass
                             #self.test_similarity_single(player_Ball)
                             #self.test_similarity_top2(player_Ball)
-                            #self.test_similarity_top3(player_Ball)
+                            self.test_similarity_top3(player_Ball)
                         '''
                             # Record statistics
                             self.ball_possesion_statistics(ball_info, player_info)
@@ -209,8 +209,9 @@ class ReadWriteLogFiles:
                 for index in ReadWriteLogFiles.w2vList:
                     f.write(str(index) + '\n')
 
-            #print("Succes percentage of predictions = %.2f%%" % (int(len(self.success)) / int(len(self.totalPases))*100))
-            print("[+] RCG DONE ! ")
+            print("\nSucces percentage of predictions = %.2f%%" % (int(len(self.success)) / int(len(self.totalPases))*100))
+            print("Total complete passes and Total passes, made by both teams: %.2d of %.2d " % (len(self.success), len(self.totalPases)))
+            print("\n[+] RCG DONE ! ")
             #print("[+] Mean time per parsed Line RCG: " + str(statistics.mean(self.parsedLineTimeRCG)))
     
 
@@ -463,10 +464,10 @@ class ReadWriteLogFiles:
             #print(newList)
             #print(ReadWriteLogFiles.w2vList)
 
-    def w2v_most_similar(self, player_number):
+    def w2v_most_similar(self, player_number, t):
         if player_number is not None:
             model = Word2Vec.load('trainedModel/word2vec.model')
-            return model.wv.most_similar(str(player_number),topn=1)
+            return model.wv.most_similar(str(player_number),topn=t)
 
 
     def test_similarity_top3(self, player_Ball):
@@ -483,7 +484,7 @@ class ReadWriteLogFiles:
             # print()
             print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
 
-            most_similar = self.w2v_most_similar(player_Ball)[:3]
+            most_similar = self.w2v_most_similar(player_Ball, 3)[:3]
             for e in most_similar:
                 top3.append(e[0])
             print("Most similar : " + str(top3))
@@ -505,7 +506,8 @@ class ReadWriteLogFiles:
             # print()
             print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
 
-            most_similar = self.w2v_most_similar(player_Ball)[:2]
+            most_similar = self.w2v_most_similar(player_Ball, 2)[:2]
+
             for e in most_similar:
                 top2.append(e[0])
             print("Most similar : " + str(top2))
@@ -525,7 +527,7 @@ class ReadWriteLogFiles:
                 print("     [+] Correct!")
             print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
 
-            most_similar = self.w2v_most_similar(player_Ball)[0]
+            most_similar = self.w2v_most_similar(player_Ball, 1)[0]
             print("Most similar : " + str(most_similar[0]))
             self.next_player = most_similar[0]
 

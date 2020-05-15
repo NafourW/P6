@@ -14,7 +14,7 @@ class modelSetup:
         start_training = time.time()
 
         # Train the model with the given(sent) text corpus
-        model = Word2Vec(sent, min_count=1, size=22, workers=4, window=1, sg=0)
+        model = Word2Vec(sent, min_count=1, size=22, workers=4, window=2, sg=0)
 
         end_training = time.time()
         print('     ..Total time (s) for preparing data = ' + str(end_training - start_training))
@@ -26,12 +26,12 @@ class modelSetup:
 
 
     def dataManipulation():
-        with open("output.txt", "r") as file:
+        with open("output_v2.txt", "r") as file:
             listOfLine = []
 
             for line in file:
                 res = re.split("[\D]", line)
-                print(list(filter(None, res)))
+                # print(list(filter(None, res)))
                 listOfLine.append(list(filter(None, res)))
             
        

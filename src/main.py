@@ -14,17 +14,17 @@ if __name__ == "__main__":
     all_files = glob.glob("logfiles/20*.rcg")
     rwlf = rwlf()
     
-    start_t = time.time()
+    # start_t = time.time()
 
 
-    for filename in all_files:
-        fn = os.path.basename(filename)
-        rwlf.inference_run(fn, "20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcl") 
+    # for filename in all_files:
+    #     fn = os.path.basename(filename)
+    #     rwlf.inference_run(fn, "20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcl") 
     
-    end_t = time.time()
+    # end_t = time.time()
 
-    print("\nTOTAL TIME: %.2f" % ((end_t - start_t)/60))
+    # print("\nTOTAL TIME: %.2f" % ((end_t - start_t)/60))
     
-    #rwlf.inference_run("20200422155917-HELIOS2019_1-vs-CYRUS2019_0.rcg", "20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcl")
+    rwlf.inference_run("20190707095641-Receptivity_1_0-vs-MT2019_1_2.rcg", "20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcl")
     #rwlf.multiThreadRWFiles("20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcg", "20180621130004-CYRUS2018_0-vs-HELIOS2018_1.rcl")
     #rwlf.multiThreadRWFiles("test.rcg", "test.rcl").

@@ -120,7 +120,7 @@ class rcgParsing:
 
         # Playmode
         # Playmode list
-        play_mode_list = (Word(" play_on") ^ Word(" time_over") ^ Word(" free_kick_r") ^ Word(" free_kick_l") ^ Word(" kick_in_l") ^ Word(" kick_in_r") ^ Word(" foul_charge_r") ^ Word(" foul_charge_l") ^ Word(" kick_off_l") ^ Word(" kick_off_r") ^ Word(" corner_kick_l") ^ Word(" corner_kick_r") ^ Word(" offside_r") ^ Word(" offside_l") ^ Word(" foul_charge_l") ^ Word(" foul_charge_r") ^ Word(" goal_kick_l") ^ Word(" goal_kick_r"))
+        play_mode_list = (Word(" play_on") ^ Word(" time_over") ^ Word(" free_kick_r") ^ Word(" free_kick_l") ^ Word(" indirect_free_kick_l") ^ Word(" indirect_free_kick_r") ^ Word(" kick_in_l") ^ Word(" kick_in_r") ^ Word(" foul_charge_r") ^ Word(" foul_charge_l") ^ Word(" kick_off_l") ^ Word(" kick_off_r") ^ Word(" corner_kick_l") ^ Word(" corner_kick_r") ^ Word(" offside_r") ^ Word(" offside_l") ^ Word(" foul_charge_l") ^ Word(" foul_charge_r") ^ Word(" goal_kick_l") ^ Word(" goal_kick_r") ^ Word(" penalty_setup_l") ^ Word(" penalty_setup_r") ^ Word(" penalty_ready_l") ^ Word(" penalty_ready_r") ^ Word(" penalty_taken_l") ^ Word(" penalty_taken_r") ^ Word(" penalty_miss_l") ^ Word(" penalty_miss_r") ^ Word(" penalty_score_r") ^ Word(" penalty_score_l") )        
         play_mode = (Word("playmode ") + Word(nums) + play_mode_list).setParseAction(rcgParsing.goal_notification)
 
         # Teamname
@@ -128,6 +128,7 @@ class rcgParsing:
 
         # Teamscore
         team_score = Word("team ") + Word(nums) + team_name + team_name + Word(nums) * 2
+        team_score_penalty = Word("team ") + Word(nums) + team_name + team_name + Word(nums) * 6
 
         # Frame and ball information
         show_frame = Word("show ") + frame_number.setParseAction(rcgParsing.get_current_frame)
@@ -178,7 +179,7 @@ class rcgParsing:
         frame_line1 = show_frame + ball + (player * 11)
         frame_line2 = (player * 11)
 
-        read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ msg ^ ((frame_line1 + frame_line2) ^ play_mode ^ team_score) + right_p))
+        read_line = start ^ (left_p + (server_param ^ player_param ^ player_type ^ msg ^ ((frame_line1 + frame_line2) ^ play_mode ^ team_score ^ team_score_penalty) + right_p))
 
         return read_line.parseString(rcg_string)
 
@@ -223,10 +224,10 @@ class rcgParsing:
         rcgParsing.is_game_end = True
 
 
-#rcg_Parser.strParsing('''(playmode 1568 free_kick_l)''')
+# rcg_Parser = rcgParsing()
+# rcg_Parser.strParsing('''(team 8129 Receptivity MT2019 1 1 0 1 0 0)''')
 #rcg_Parser.strParsing('''(playmode 1567 foul_charge_r)''')
 #rcg_Parser.strParsing('''(playmode 1682 goal_l)''')
-#rcg_Parser = rcgParsing()
 #rcg_Parser.strParsing('''''')
 #rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")''')
 #print(rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")'''))

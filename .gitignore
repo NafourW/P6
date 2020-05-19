@@ -6,3 +6,5 @@
 
 # RoboCup Log files
 logs/*
+
+src/__pycache__/

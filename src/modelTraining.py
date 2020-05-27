@@ -14,7 +14,7 @@ class modelSetup:
         start_training = time.time()
 
         # Train the model with the given(sent) text corpus
-        model = Word2Vec(sent, min_count=1, size=22, workers=4, window=2, sg=0)
+        model = Word2Vec(sent, min_count=10, size=42, workers=4, window=1, sg=1)
 
         end_training = time.time()
         print('     ..Total time (s) for preparing data = ' + str(end_training - start_training))

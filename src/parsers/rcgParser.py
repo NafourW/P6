@@ -1,4 +1,4 @@
-from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums, Combine, Suppress, Group, Suppress, Optional
+from pyparsing import Word, Literal, ZeroOrMore, SkipTo, lineEnd, nums, alphanums, Combine, Suppress, Group, Suppress, Optional, OneOrMore
 
 class rcgParsing:
     current_frame = 0
@@ -124,7 +124,7 @@ class rcgParsing:
         play_mode = (Word("playmode ") + Word(nums) + play_mode_list).setParseAction(rcgParsing.goal_notification)
 
         # Teamname
-        team_name = Combine(Word(alphanums) + Optional("_" + Word(alphanums)))
+        team_name = Combine(Word(alphanums) + Optional(OneOrMore((Literal("-") | Literal("_")) + Word(alphanums))))
 
         # Teamscore
         team_score = Word("team ") + Word(nums) + team_name + team_name + Word(nums) * 2

@@ -5,7 +5,7 @@ from pyparsing import ParseException
 from math import sqrt
 from time import sleep
 from gensim.models import Word2Vec
-import os, heapq, time, statistics
+import os, heapq, time, statistics, random
 
 class ReadWriteLogFiles:
     # .rcg variables
@@ -182,9 +182,15 @@ class ReadWriteLogFiles:
                             #self.Word2VecTextCorpus_v2(ball_info,player_info,player_Ball)
                             
                             # Guesses for pass
-                            #self.test_similarity_single(player_Ball)
+                            self.test_similarity_single(player_Ball)
                             #self.test_similarity_top2(player_Ball)
-                            self.test_similarity_top3(player_Ball)
+                            #self.test_similarity_top3(player_Ball)
+                            
+                            # Random Gueses for pass
+                            #self.test_random_single(player_Ball)
+                            #self.test_random_top2(player_Ball)
+                            #self.test_random_top3(player_Ball)
+
                         '''
                             # Record statistics
                             self.ball_possesion_statistics(ball_info, player_info)
@@ -449,13 +455,13 @@ class ReadWriteLogFiles:
             pass
         else:
             n_player = self.get_distance_from_player_to_team(player_Ball, player_info)
-            print("Frame: " + self.rcgParser.current_frame + "  " + str(player_Ball) + " has the ball!", end="\r")
+            print("Frame: " + self.rcgParser.current_frame + "  " + str(player_Ball) + " has the ball!")
             # ReadWriteLogFiles.w2vList.append(player_Ball)
             # ReadWriteLogFiles.w2vList.append(heapq.nsmallest(3, n_player.values()))
             top5 = {k: n_player[k] for k in sorted(n_player, key=n_player.get)}
 
             #newList.append(player_Ball)
-            for i in list(top5.keys())[:5]:
+            for i in list(top5.keys())[:11]:
                 newList.append(player_Ball)
                 newList.append(i)
 
@@ -478,10 +484,9 @@ class ReadWriteLogFiles:
 
             # If the player with the ball is the one W2V guessed 
             if str(player_Ball) in self.next_players:
-
                 self.success.append(1)
                 print("     [+] Correct!")
-            # print()
+
             print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
 
             most_similar = self.w2v_most_similar(player_Ball, 3)[:3]
@@ -500,10 +505,9 @@ class ReadWriteLogFiles:
 
             # If the player with the ball is the one W2V guessed 
             if str(player_Ball) in self.next_players:
-
                 self.success.append(1)
                 print("     [+] Correct!")
-            # print()
+
             print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
 
             most_similar = self.w2v_most_similar(player_Ball, 2)[:2]
@@ -530,5 +534,80 @@ class ReadWriteLogFiles:
             most_similar = self.w2v_most_similar(player_Ball, 1)[0]
             print("Most similar : " + str(most_similar[0]))
             self.next_player = most_similar[0]
+
+        self.last_player_with_ball = player_Ball
+
+    def test_random_single(self, player_Ball):
+        #random_list = []
+        # If the player with the ball is not the same as last frame
+        if player_Ball is not None and self.last_player_with_ball != player_Ball:
+            self.totalPases.append(1)
+
+            # If the player with the ball is the one W2V guessed 
+            if player_Ball == self.next_player:
+                self.success.append(1)
+                print("     [+] Correct!")
+            print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
+            
+            if player_Ball <= 11:
+                most_similar = random.randint(1,11)
+
+            if player_Ball > 11:
+                most_similar = random.randint(12,22)
+
+            print("Most similar : " + str(most_similar))
+            self.next_player = most_similar
+
+        self.last_player_with_ball = player_Ball
+
+    def test_random_top2(self, player_Ball):
+        top2 = []
+        # If the player with the ball is not the same as last frame
+        if player_Ball is not None and self.last_player_with_ball != player_Ball:
+            self.totalPases.append(1)
+
+            # If the player with the ball is the one W2V guessed 
+            if player_Ball in self.next_players:
+                self.success.append(1)
+                print("     [+] Correct!")
+                
+            print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
+            
+            if player_Ball <= 11:
+                for e in range(2):
+                    top2.append(random.randint(1,11))
+
+            if player_Ball > 11:
+                for e in range(2):
+                    top2.append(random.randint(12,22))                
+
+            print("Most similar : " + str(top2))
+            self.next_players = top2
+
+        self.last_player_with_ball = player_Ball
+
+    def test_random_top3(self, player_Ball):
+        top3 = []
+        # If the player with the ball is not the same as last frame
+        if player_Ball is not None and self.last_player_with_ball != player_Ball:
+            self.totalPases.append(1)
+
+            # If the player with the ball is the one W2V guessed 
+            if player_Ball in self.next_players:
+                self.success.append(1)
+                print("     [+] Correct!")
+
+            print("\nFrame: " + str(self.rcgParser.current_frame) + "\nPlayer: " + str(player_Ball) + " has the ball")
+            
+            if player_Ball <= 11:
+                for e in range(3):
+                    top3.append(random.randint(1,11))
+
+            if player_Ball > 11:
+                for e in range(3):
+                    top3.append(random.randint(12,22))                
+
+            print("Most similar : " + str(top3))
+            self.next_players = top3
 
         self.last_player_with_ball = player_Ball

@@ -30,7 +30,6 @@ class rclParsing:
         rp = Literal(")").suppress()
         frame = integer
         cycle = integer
-        #time = Group(frame + Suppress(",") + cycle)
         time = (Group(frame + Suppress(",") + cycle)).setParseAction(rclParsing.get_time)
         parameterContent = Combine(ZeroOrMore(Word(alphanums) | space))
         parameter = OneOrMore(lp + parameterContent + rp)
@@ -106,10 +105,6 @@ class rclParsing:
     def get_time(self, time):
         rclParsing.current_frame = time[0][0]
         rclParsing.current_cycle = time[0][1]
-        # DISABLED
-        # It is very buggy
-        #print("Time(RCL): " + rclParsing.current_frame + ", " + rclParsing.current_cycle, end="\r")
-
 
     def get_team_name(self, initCommand):
         if rclParsing.team_name_l is not None:
@@ -263,30 +258,3 @@ class rclParsing:
 
     def game_has_ended(self):
         rclParsing.is_game_end = True
-
-
-
-'''
-rcl_Parser = rclParsing()
-662,0	Recv CYRUS2018_11: (kick 78.092 9.12467)(turn_neck 30)(say "Eu6*PzrUsE")
-rcl_Parser.strParsing('''''')
-print(rcl_Parser.latest_player_kick)
-rcl_Parser.strParsing("")
-rcl_Parser.strParsing("0,23	Recv CYRUS2019_1: (init CYRUS2019 (version 14) (goalie))")
-rcl_Parser.strParsing("0,45	Recv HELIOS2019_1: (init HELIOS2019 (version 15) (goalie))")
-rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)")
-rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(kick 98 0.744628)")
-rcl_Parser.strParsing("90,0	Recv CYRUS2019_10: (kick 100 0.744628)(turn_neck -45)")
-rcl_Parser.strParsing("91,0	Recv HELIOS2019_4: (move 100 0.744628)(turn_neck -45)")
-
-rcl_Parser.strParsing("2447,0	Recv HELIOS2019_5: (dash 85)(turn_neck 130)(attentionto our 9)")
-rcl_Parser.strParsing("2447,0	Recv HELIOS2019_3: (turn 25.363)(turn_neck -63)(change_view normal)(attentionto our 9)")
-rcl_Parser.strParsing("2447,0	Recv HELIOS2019_2: (turn -169.549)(turn_neck -45)(attentionto our 9)")
-rcl_Parser.strParsing("2447,0	Recv HELIOS2019_7: (turn 4)(turn_neck -60)(attentionto our 9)")
-rcl_Parser.strParsing("2447,0	Recv CYRUS2019_8: (dash 69.407)(turn_neck -180)")
-rcl_Parser.strParsing("2447,0	Recv CYRUS2019_9: (dash 76.323)(turn_neck -49)(attentionto our 7)(say "ls2PIC_x9H")")
-rcl_Parser.strParsing("2447,0	Recv CYRUS2019_10: (turn 0)(turn_neck -123)(attentionto our 9)")
-rcl_Parser.strParsing("2447,0	Recv CYRUS2019_11: (turn 56.89)(turn_neck -47)(attentionto our 7)")
-print(rcl_Parser.team_l_buffer)
-print(rcl_Parser.team_r_buffer)
-'''

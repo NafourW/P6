@@ -222,12 +222,3 @@ class rcgParsing:
         elif rcgParsing.team_score_2 > rcgParsing.team_score_1:
             print(rcgParsing.team_name_2 + "!")
         rcgParsing.is_game_end = True
-
-
-# rcg_Parser = rcgParsing()
-# rcg_Parser.strParsing('''(team 8129 Receptivity MT2019 1 1 0 1 0 0)''')
-#rcg_Parser.strParsing('''(playmode 1567 foul_charge_r)''')
-#rcg_Parser.strParsing('''(playmode 1682 goal_l)''')
-#rcg_Parser.strParsing('''''')
-#rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")''')
-#print(rcg_Parser.strParsing('''(msg 6000 1 "(result 201806211300 CYRUS2018_0-vs-HELIOS2018_1)")'''))

@@ -26,12 +26,11 @@ class modelSetup:
 
 
     def dataManipulation():
-        with open("output_v2.txt", "r") as file:
+        with open("output.txt", "r") as file:
             listOfLine = []
 
             for line in file:
                 res = re.split("[\D]", line)
-                # print(list(filter(None, res)))
                 listOfLine.append(list(filter(None, res)))
             
        

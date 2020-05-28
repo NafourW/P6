@@ -183,7 +183,7 @@ class ParseTesting(unittest.TestCase):
             ball_info = rcgParser.get_ball_info(line)
             
             distances = {}
-            player_num_possesing_ball = rwfl.get_player_number_possesing_ball(ball_info, player_info)
+            player_num_possesing_ball = rwfl.get_player_number_possessing_ball(ball_info, player_info)
             if player_num_possesing_ball is not None:
                 print("Player possesing ball: " + str(player_num_possesing_ball))
                 distances = rwfl.get_distance_from_player_to_team(player_num_possesing_ball, player_info)

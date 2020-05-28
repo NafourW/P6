@@ -85,22 +85,22 @@ class rcgParsing:
             stamina = player[3]
 
             player_info[str(counter)] = {
-            "side" : player[0][0],
-            "unum" : player[0][1],
-            "type_id" : body_info[0],
-            "state" : body_info[1],
-            "pos_x" : body_info[2],
-            "pos_y" : body_info[3],
-            "vel_x" : body_info[4],
-            "vel_y" : body_info[5],
-            "body_angle" : body_info[6],
-            "head_angle" : body_info[7],
-            "view_quality" : view_mode[1],
-            "view_width" : view_mode[2],
-            "stamina" : stamina[1],
-            "stamina_effort" : stamina[2],
-            "stamina_recovery" : stamina[3],
-            "stamina_capacity" : stamina[4]
+                "side" : player[0][0],
+                "unum" : player[0][1],
+                "type_id" : body_info[0],
+                "state" : body_info[1],
+                "pos_x" : body_info[2],
+                "pos_y" : body_info[3],
+                "vel_x" : body_info[4],
+                "vel_y" : body_info[5],
+                "body_angle" : body_info[6],
+                "head_angle" : body_info[7],
+                "view_quality" : view_mode[1],
+                "view_width" : view_mode[2],
+                "stamina" : stamina[1],
+                "stamina_effort" : stamina[2],
+                "stamina_recovery" : stamina[3],
+                "stamina_capacity" : stamina[4]
             }
             
             counter += 1

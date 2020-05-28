@@ -9,8 +9,7 @@ pathToFile = os.getcwd()
 path = Path(pathToFile).parent
 sys.path.insert(1, str(path))
 
-from rclParser import rclParsing
-from rcgParser import rcgParsing
+from parsers.rcgParser import rcgParsing
 from pyparsing import ParseException
 
 class ParseTesting(unittest.TestCase):

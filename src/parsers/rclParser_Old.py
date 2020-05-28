@@ -149,18 +149,18 @@ class rclParsing:
             rclParsing.team_name_l = initCommand[1]
 
     def game_has_begun(self, kick_off):
-        if rcl_Parser.kick_off_counter == 0:
+        if rclParsing.kick_off_counter == 0:
             if kick_off[0][1] == 'l':
-                print("The game just begun with a kick off from " + rcl_Parser.team_name_l)
+                print("The game just begun with a kick off from " + rclParsing.team_name_l)
             elif kick_off[0][1] == 'r':
-                print("The game just begun with a kick off from " + rcl_Parser.team_name_r)
-            rcl_Parser.kick_off_counter += 1
-        elif rcl_Parser.kick_off_counter > 0:
+                print("The game just begun with a kick off from " + rclParsing.team_name_r)
+            rclParsing.kick_off_counter += 1
+        elif rclParsing.kick_off_counter > 0:
             if kick_off[0][1] == 'l':
-                print("And we continue from " + rcl_Parser.team_name_l)
+                print("And we continue from " + rclParsing.team_name_l)
             elif kick_off[0][1] == 'r':
-                print("And we continue from " + rcl_Parser.team_name_r)
-            rcl_Parser.kick_off_counter += 1
+                print("And we continue from " + rclParsing.team_name_r)
+            rclParsing.kick_off_counter += 1
 
     def get_player(self, playerName):
         player = ''
@@ -171,12 +171,12 @@ class rclParsing:
         
         player += playerName[0][(len(playerName[0]) - 1)]
         
-        if player in rcl_Parser.yellow_cards:
+        if player in rclParsing.yellow_cards:
             print(player + " needs to be careful, he just received a yellow card!")
-        elif player in rcl_Parser.red_cards:
+        elif player in rclParsing.red_cards:
             print("What the hell is " + player + " doing? He already got a red card!")
         else:
-            rcl_Parser.player_name = player
+            rclParsing.player_name = player
 
     def get_player_action(self, actCommand):
         a = 1
@@ -192,22 +192,22 @@ class rclParsing:
 
     def get_yellow_card(self, yellow_card):
         if yellow_card[0][1] == 'l':
-            player = str(rcl_Parser.team_name_l) + '_' + str(yellow_card[0][2])
-            rcl_Parser.yellow_cards.append(player)
+            player = str(rclParsing.team_name_l) + '_' + str(yellow_card[0][2])
+            rclParsing.yellow_cards.append(player)
             print("Well, that's a yellow card for " + player + "!")
         elif yellow_card[0][1] == 'r':
-            player = str(rcl_Parser.team_name_r) + '_' + str(yellow_card[0][2])
-            rcl_Parser.yellow_cards.append(player)
+            player = str(rclParsing.team_name_r) + '_' + str(yellow_card[0][2])
+            rclParsing.yellow_cards.append(player)
             print("Well, that's a yellow card for " + player + "!")
 
     def get_red_card(self, red_card):
         if red_card[0][1] == 'l':
-            player = str(rcl_Parser.team_name_l) + '_' + str(red_card[0][2])
-            rcl_Parser.red_cards.append(player)
+            player = str(rclParsing.team_name_l) + '_' + str(red_card[0][2])
+            rclParsing.red_cards.append(player)
             print(player + " just received a red card!")
         elif red_card[0][1] == 'r':
-            player = str(rcl_Parser.team_name_r) + '_' + str(red_card[0][2])
-            rcl_Parser.red_cards.append(player)
+            player = str(rclParsing.team_name_r) + '_' + str(red_card[0][2])
+            rclParsing.red_cards.append(player)
             print(player + " just received a red card!")
 
     def game_has_ended(self):

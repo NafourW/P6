@@ -1,4 +1,4 @@
-from pyparsing import Word, Combine, ZeroOrMore, Optional, Literal, Suppress, Group, alphanums, OneOrMore, nums, SkipTo, alphas, lineEnd
+from pyparsing import Word, Combine, ZeroOrMore, Optional, Literal, Suppress, Group, alphanums, OneOrMore, nums, SkipTo, lineEnd
 
 
 class rclParsing:

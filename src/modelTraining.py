@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import pandas as pd
 import time
-import json
-import os
 import re
 
 class modelSetup:
@@ -37,7 +35,6 @@ class modelSetup:
         modelSetup.train_model(listOfLine)
     
     def loadModel():
-        similarities = []
         print('[+] Load model')
         model = Word2Vec.load('trainedModel/word2vec.model')
         
@@ -61,5 +58,5 @@ class modelSetup:
         print(df)
         print(model.wv.most_similar('8',topn=3))
         
-# modelSetup.dataManipulation()
+modelSetup.dataManipulation()
 modelSetup.loadModel()

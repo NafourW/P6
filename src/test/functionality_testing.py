@@ -3,14 +3,12 @@ import unittest
 from pathlib import Path
 import os
 import sys
-import math
 
 # Enable importing from src folder
 pathToFile = os.getcwd()
 path = Path(pathToFile).parent
 sys.path.insert(1, str(path))
 
-from parsers.rclParser import rclParsing
 from parsers.rcgParser import rcgParsing
 from readWriteFiles import ReadWriteLogFiles
 
@@ -31,7 +29,7 @@ class FunctionalityTesting(unittest.TestCase):
 
                     ball_info = rcgParser.get_ball_info(line)
                     player_info = rcgParser.get_player_info(line)
-                    print("Frame: " + rcgParser.current_frame + " Player: " + str(rwlf.get_player_number_possesing_ball(ball_info, player_info)))
+                    print("Frame: " + rcgParser.current_frame + " Player: " + str(rwlf.get_player_number_possessing_ball(ball_info, player_info)))
 
                 line = file.readline()
 

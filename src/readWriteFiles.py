@@ -3,21 +3,21 @@ from parsers.rclParser import rclParsing
 from parsers.rcgParser import rcgParsing
 from pyparsing import ParseException
 from math import sqrt
-from time import sleep
 from gensim.models import Word2Vec
-import os, heapq, time, statistics, random
+import random
+
 
 class ReadWriteLogFiles:
     # .rcg variables
-    t1_ball_possesion = []
-    t2_ball_possesion = []
+    t1_ball_possession = []
+    t2_ball_possession = []
     ball_location_history = []
 
     # Word2Vec
     last_player_with_ball = -1
     next_player = -1
     next_players = []
-    totalPases = []
+    totalPasses = []
     success = []
     w2vList = []
 
@@ -36,22 +36,19 @@ class ReadWriteLogFiles:
     scored_players = []
     scored_players_frames = []
 
-
     def multiThreadRWFiles(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
         self.rcl_file = rcl_file
 
-        Thread(target = self.readLogFileRCL).start()
-        Thread(target = self.readLogFileRCG).start()
-
+        Thread(target=self.readLogFileRCL).start()
+        Thread(target=self.readLogFileRCG).start()
     
     def inference_run(self, rcg_file, rcl_file):
         self.rcg_file = rcg_file
-        # self.rcl_file = rcl_file
+        self.rcl_file = rcl_file
 
-        # Thread(target = self.inferenceRCL).start()
-        Thread(target = self.inferenceRCG).start()
-        
+        Thread(target=self.inferenceRCL).start()
+        Thread(target=self.inferenceRCG).start()
 
     def readLogFileRCG(self):
         with open("logfiles/" + self.rcg_file, "r") as file:
@@ -60,7 +57,6 @@ class ReadWriteLogFiles:
             self.score_alarm = self.rcgParser.goal_alarm
 
             while True:
-
                 if self.rcgParser.is_game_end == True:
                     break
                 else:
@@ -72,7 +68,7 @@ class ReadWriteLogFiles:
                         counter += 1
                         self.rcgParser.strParsing(line)
 
-                        # What does this do? ...
+                        # LIFO for latest players possessing ball
                         if (len(self.latest_player_possessing_ball) > 10):
                             self.latest_player_possessing_ball.remove(self.latest_player_possessing_ball[0])
 
@@ -80,18 +76,20 @@ class ReadWriteLogFiles:
                         if "show" in line:
                             ball_info = self.rcgParser.get_ball_info(line)
                             player_info = self.rcgParser.get_player_info(line)
-                            player_Ball = self.get_player_number_possesing_ball(ball_info, player_info)
+                            player_Ball = self.get_player_number_possessing_ball(ball_info, player_info)
 
                             # TRAINING
-                            self.Word2VecTextCorpus(ball_info, player_info, player_Ball)
+                            # DISABLED generation of text corpus
+                            # self.Word2VecTextCorpus(ball_info, player_info, player_Ball)
+                            # self.Word2VecTextCorpus_v2(ball_info,player_info,player_Ball)
 
                             # Record statistics
-                            self.ball_possesion_statistics(ball_info, player_info)
+                            self.ball_possession_statistics(ball_info, player_info)
                             self.record_ball_location(ball_info)
                             
                         # Every 100 lines, print statistics
                         if counter % 100 == 0:
-                            self.print_ball_possesion_statistics()
+                            self.print_ball_possession_statistics()
                             self.print_ball_location_statistics()
                         
                         # Detect for player scoring
@@ -125,6 +123,7 @@ class ReadWriteLogFiles:
                     break
                 else:
                     try:
+                        print(counter)
                         # Synchronize the reading of RCG and RCL files
                         while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
                             if int(self.rcgParser.current_frame) >= int(self.rclParser.current_frame):
@@ -144,7 +143,6 @@ class ReadWriteLogFiles:
 
 
     def inferenceRCG(self):
-        line_counter = 0
         self.score_alarm = self.rcgParser.goal_alarm
         counter = 0
 
@@ -159,15 +157,14 @@ class ReadWriteLogFiles:
                     break
                 else:
                     try:
-                        '''
                         while int(self.rcgParser.current_frame) != int(self.rclParser.current_frame):
                             if int(self.rcgParser.current_frame) <= int(self.rclParser.current_frame):
                                 break
-                        '''
+
                         counter += 1
                         self.rcgParser.strParsing(line)
 
-                        # What does this do? ...
+                        # LIFO for latest players possessing ball
                         if (len(self.latest_player_possessing_ball) > 10):
                             self.latest_player_possessing_ball.remove(self.latest_player_possessing_ball[0])
 
@@ -175,52 +172,31 @@ class ReadWriteLogFiles:
                         if "show" in line:
                             ball_info = self.rcgParser.get_ball_info(line)
                             player_info = self.rcgParser.get_player_info(line)
-                            player_Ball = self.get_player_number_possesing_ball(ball_info, player_info)
-
-                            # TRAINING
-                            #self.Word2VecTextCorpus(ball_info, player_info, player_Ball)
-                            #self.Word2VecTextCorpus_v2(ball_info,player_info,player_Ball)
+                            player_Ball = self.get_player_number_possessing_ball(ball_info, player_info)
                             
-                            # Guesses for pass
-                            self.test_similarity_single(player_Ball)
-                            #self.test_similarity_top2(player_Ball)
-                            #self.test_similarity_top3(player_Ball)
-                            
-                            # Random Gueses for pass
-                            #self.test_random_single(player_Ball)
-                            #self.test_random_top2(player_Ball)
-                            #self.test_random_top3(player_Ball)
+                            # self.word2vec_guessing(player_Ball)
 
-                        '''
                             # Record statistics
-                            self.ball_possesion_statistics(ball_info, player_info)
+                            self.ball_possession_statistics(ball_info, player_info)
                             self.record_ball_location(ball_info)
                             
                         # Every 100 lines, print statistics
                         if counter % 100 == 0:
-                            self.print_ball_possesion_statistics()
+                            self.print_ball_possession_statistics()
                             self.print_ball_location_statistics()
                         
                         # Detect for player scoring
                         if self.rcgParser.goal_alarm > self.score_alarm:
                             self.get_player_scored()
-                        '''
+
                     except ParseException as e:
                         print(e)
                         break
 
                     line = file.readline()
 
-            with open('output.txt', 'a') as f:
-                for index in ReadWriteLogFiles.w2vList:
-                    f.write(str(index) + '\n')
-
-            print("\nSucces percentage of predictions = %.2f%%" % (int(len(self.success)) / int(len(self.totalPases))*100))
-            print("Total complete passes and Total passes, made by both teams: %.2d of %.2d " % (len(self.success), len(self.totalPases)))
-            print("\n[+] RCG DONE ! ")
-            #print("[+] Mean time per parsed Line RCG: " + str(statistics.mean(self.parsedLineTimeRCG)))
+            self.print_word2vec_percentage()       
     
-
     def inferenceRCL(self):
         with open("logfiles/" + self.rcl_file, "r") as file:
             line = file.readline()
@@ -248,29 +224,46 @@ class ReadWriteLogFiles:
             error_line = line if line else "No errors while parsing rcl file"
             print(error_line)
 
+    def word2vec_guessing(self, player_Ball):
+        # Guesses for pass
+        self.test_similarity_single(player_Ball)
+        # self.test_similarity_top2(player_Ball)
+        # self.test_similarity_top3(player_Ball)
+        
+        # Random Guesses for pass
+        # self.test_random_single(player_Ball)
+        # self.test_random_top2(player_Ball)
+        # self.test_random_top3(player_Ball)
+
+    def print_word2vec_percentage(self):
+        print("\nSucces percentage of predictions = %.2f%%" % (int(len(self.success)) / int(len(self.totalPasses)) * 100))
+        print("Total complete passes and Total passes, made by both teams: %.2d of %.2d " % (len(self.success), len(self.totalPasses)))
+        print("\n[+] RCG DONE ! ")
+        # print("[+] Mean time per parsed Line RCG: " + str(statistics.mean(self.parsedLineTimeRCG)))
+
     def print_ball_location_statistics(self):
         ball_location_history_size = len(self.ball_location_history)
 
         # Make sure not to divide by 0
         if ball_location_history_size != 0:
-            print("Ball on Left side of field percentage: %.0f%%" 
+            print("Ball on Left side of field percentage: %.0f%%"
                 % float((self.ball_location_history.count("left") / ball_location_history_size * 100)))
-            print("Ball on Right side of field percentage: %.0f%%" 
+            print("Ball on Right side of field percentage: %.0f%%"
                 % float((self.ball_location_history.count("right") / ball_location_history_size * 100)))
             print("")
 
-
-    def print_ball_possesion_statistics(self):
-        # Calculate the possesion statistics
-        t1_ball_possesion_size = len(self.t1_ball_possesion)
-        t2_ball_possesion_size = len(self.t2_ball_possesion)
+    def print_ball_possession_statistics(self):
+        # Calculate the possession statistics
+        t1_ball_possession_size = len(self.t1_ball_possession)
+        t2_ball_possession_size = len(self.t2_ball_possession)
 
         # Make sure not to divide by zero
-        if t1_ball_possesion_size != 0 or t2_ball_possesion_size != 0:
-            print("Team 1 ball possesion percentage: %.2f%%" % (float(t1_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100))
-            print("Team 2 ball possesion percentage: %.2f%%" % (float(t2_ball_possesion_size / (t1_ball_possesion_size + t2_ball_possesion_size)) * 100))
+        if t1_ball_possession_size != 0 or t2_ball_possession_size != 0:
+            print("Team 1 ball possession percentage: %.2f%%"
+                  % (float(t1_ball_possession_size / (t1_ball_possession_size + t2_ball_possession_size)) * 100))
+            print("Team 2 ball possession percentage: %.2f%%"
+                  % (float(t2_ball_possession_size / (t1_ball_possession_size + t2_ball_possession_size)) * 100))
             print("")
-
 
     def record_ball_location(self, ball_info):
         if float(ball_info["pos_x"]) > 0:
@@ -278,30 +271,28 @@ class ReadWriteLogFiles:
         elif float(ball_info["pos_x"]) < 0:
             self.ball_location_history.append("right")
 
+    def ball_possession_statistics(self, ball_info, player_info):
+        player_possessing = self.get_player_number_possessing_ball(ball_info, player_info)
 
-    def ball_possesion_statistics(self, ball_info, player_info):
-        player_possesing = self.get_player_number_possesing_ball(ball_info, player_info)
-        
-        # Save who possesed the ball
-        if player_possesing is not None:
+        # Save who possessed the ball
+        if player_possessing is not None:
 
-            # If the player possesing the ball is from team 1
-            if player_possesing <= 11:
-                self.t1_ball_possesion.append("team1")
-            elif player_possesing > 11:
-                self.t2_ball_possesion.append("team2")
+            # If the player possessing the ball is from team 1
+            if player_possessing <= 11:
+                self.t1_ball_possession.append("team1")
+            elif player_possessing > 11:
+                self.t2_ball_possession.append("team2")
 
-
-    def get_player_number_possesing_ball(self, ball_info, player_info):
+    def get_player_number_possessing_ball(self, ball_info, player_info):
         closest_distance = 3
-        player_possesing = None
+        player_possessing = None
 
         # If the ball is not in the starting position
         if float(ball_info["pos_x"]) != 0 or float(ball_info["pos_y"]) != 0:
-            
-            # Find out which player is possesing the ball, if any
+
+            # Find out which player is possessing the ball, if any
             for player_number in range(1, 23):
-                
+
                 pos_x_player = float(player_info[str(player_number)]["pos_x"])
                 pos_y_player = float(player_info[str(player_number)]["pos_y"])
 
@@ -313,21 +304,20 @@ class ReadWriteLogFiles:
 
                 # Distance from player to ball
                 distance = sqrt(pow1 + pow2)
-                
+
                 # If a player is within 5 units of the ball and closer than any other
-                if distance <= 2 and distance < closest_distance: 
+                if distance <= 2 and distance < closest_distance:
                     closest_distance = distance
-                    player_possesing = player_number
-        
+                    player_possessing = player_number
+
         # Store the player who last possessed the ball within a specific frame
-        if player_possesing is not None:
-            if int(player_possesing) > 11:
-                self.latest_player_possessing_ball.append([self.rcgParser.current_frame, str(self.rclParser.team_name_r) + '_' + str(int(player_possesing) - 11)])
-            elif int(player_possesing) < 12:
-                self.latest_player_possessing_ball.append([self.rcgParser.current_frame, str(self.rclParser.team_name_l) + '_' + str(player_possesing)])
+        if player_possessing is not None:
+            if int(player_possessing) > 11:
+                self.latest_player_possessing_ball.append([self.rcgParser.current_frame, str(self.rclParser.team_name_r) + '_' + str(int(player_possessing) - 11)])
+            elif int(player_possessing) < 12:
+                self.latest_player_possessing_ball.append([self.rcgParser.current_frame, str(self.rclParser.team_name_l) + '_' + str(player_possessing)])
 
-        return player_possesing
-
+        return player_possessing
 
     def get_distance_from_player_to_team(self, player_number, player_info):
         distance = {}
@@ -369,18 +359,16 @@ class ReadWriteLogFiles:
 
         return distance
 
-
     def get_stamina_of_players(self, player_info):
         stamina = {}
 
         for player_number in range(1, 23):
             stamina[str(player_number)] = [
-                player_info[str(player_number)]["stamina"], 
+                player_info[str(player_number)]["stamina"],
                 player_info[str(player_number)]["stamina_capacity"]
             ]
 
         return stamina
-
 
     def get_player_scored(self):
         last_kicker = None
@@ -426,8 +414,7 @@ class ReadWriteLogFiles:
                         pass
                         # sleep(2)
                     elif self.rclParser.latest_player_kick[i][0] > self.latest_player_possessing_ball[j][0]:
-                        print("score_player_found: " + str(score_player_found)) # cannot find any player who scored
-
+                        print("score_player_found: " + str(score_player_found))  # cannot find any player who scored
 
     def Word2VecTextCorpus(self, ball_info, player_info, player_Ball):
         newList = []
@@ -437,16 +424,16 @@ class ReadWriteLogFiles:
             pass
         else:
             n_player = self.get_distance_from_player_to_team(player_Ball, player_info)
-            print("Frame: " + self.rcgParser.current_frame + "  " + str(player_Ball) + " has the ball!")
+            # print("Frame: " + self.rcgParser.current_frame + "  " + str(player_Ball) + " has the ball!")
             # ReadWriteLogFiles.w2vList.append(player_Ball)
             # ReadWriteLogFiles.w2vList.append(heapq.nsmallest(3, n_player.values()))
             top5 = {k: n_player[k] for k in sorted(n_player, key=n_player.get)}
 
             newList.append(player_Ball)
             newList.extend(list(top5.keys())[:5])
-            #ReadWriteLogFiles.w2vList = newList 
+            # ReadWriteLogFiles.w2vList = newList
             ReadWriteLogFiles.w2vList.append(newList)
-            #print(ReadWriteLogFiles.w2vList)
+            # print(ReadWriteLogFiles.w2vList)
 
     def Word2VecTextCorpus_v2(self, ball_info, player_info, player_Ball):
         newList = []
@@ -455,32 +442,31 @@ class ReadWriteLogFiles:
             pass
         else:
             n_player = self.get_distance_from_player_to_team(player_Ball, player_info)
-            print("Frame: " + self.rcgParser.current_frame + "  " + str(player_Ball) + " has the ball!")
+            # print("Frame: " + self.rcgParser.current_frame + "  " + str(player_Ball) + " has the ball!")
             # ReadWriteLogFiles.w2vList.append(player_Ball)
             # ReadWriteLogFiles.w2vList.append(heapq.nsmallest(3, n_player.values()))
             top5 = {k: n_player[k] for k in sorted(n_player, key=n_player.get)}
 
-            #newList.append(player_Ball)
+            # newList.append(player_Ball)
             for i in list(top5.keys())[:11]:
                 newList.append(player_Ball)
                 newList.append(i)
 
-            #newList.append(list(top5.keys())[:5])
+            # newList.append(list(top5.keys())[:5])
             ReadWriteLogFiles.w2vList.append(newList)
-            #print(newList)
-            #print(ReadWriteLogFiles.w2vList)
+            # print(newList)
+            # print(ReadWriteLogFiles.w2vList)
 
     def w2v_most_similar(self, player_number, t):
         if player_number is not None:
             model = Word2Vec.load('trainedModel/word2vec.model')
             return model.wv.most_similar(str(player_number),topn=t)
 
-
     def test_similarity_top3(self, player_Ball):
         top3 =[]
         # If the player with the ball is not the same as last frame
         if player_Ball is not None and self.last_player_with_ball != player_Ball:
-            self.totalPases.append(1)
+            self.totalPasses.append(1)
 
             # If the player with the ball is the one W2V guessed 
             if str(player_Ball) in self.next_players:
@@ -501,7 +487,7 @@ class ReadWriteLogFiles:
         top2 =[]
         # If the player with the ball is not the same as last frame
         if player_Ball is not None and self.last_player_with_ball != player_Ball:
-            self.totalPases.append(1)
+            self.totalPasses.append(1)
 
             # If the player with the ball is the one W2V guessed 
             if str(player_Ball) in self.next_players:
@@ -519,11 +505,10 @@ class ReadWriteLogFiles:
 
         self.last_player_with_ball = player_Ball
 
-
     def test_similarity_single(self, player_Ball):
         # If the player with the ball is not the same as last frame
         if player_Ball is not None and self.last_player_with_ball != player_Ball:
-            self.totalPases.append(1)
+            self.totalPasses.append(1)
 
             # If the player with the ball is the one W2V guessed 
             if str(player_Ball) == self.next_player:
@@ -538,10 +523,10 @@ class ReadWriteLogFiles:
         self.last_player_with_ball = player_Ball
 
     def test_random_single(self, player_Ball):
-        #random_list = []
+        # random_list = []
         # If the player with the ball is not the same as last frame
         if player_Ball is not None and self.last_player_with_ball != player_Ball:
-            self.totalPases.append(1)
+            self.totalPasses.append(1)
 
             # If the player with the ball is the one W2V guessed 
             if player_Ball == self.next_player:
@@ -564,7 +549,7 @@ class ReadWriteLogFiles:
         top2 = []
         # If the player with the ball is not the same as last frame
         if player_Ball is not None and self.last_player_with_ball != player_Ball:
-            self.totalPases.append(1)
+            self.totalPasses.append(1)
 
             # If the player with the ball is the one W2V guessed 
             if player_Ball in self.next_players:
@@ -590,7 +575,7 @@ class ReadWriteLogFiles:
         top3 = []
         # If the player with the ball is not the same as last frame
         if player_Ball is not None and self.last_player_with_ball != player_Ball:
-            self.totalPases.append(1)
+            self.totalPasses.append(1)
 
             # If the player with the ball is the one W2V guessed 
             if player_Ball in self.next_players:

@@ -22,7 +22,7 @@ def exampleRun():
     # Example run
     x1 = 2
     x2 = 8
-    x3 = 5
+    x3 = 8
     y1 = 3
     y2 = 8
     y3 = 5

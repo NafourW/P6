@@ -14,7 +14,7 @@ class modelSetup:
         start_training = time.time()
 
         # Train the model with the given(sent) text corpus
-        model = Word2Vec(sent, min_count=10, size=42, workers=4, window=1, sg=1)
+        model = Word2Vec(sent, min_count=10, size=22, workers=4, window=1, sg=0)
 
         end_training = time.time()
         print('     ..Total time (s) for preparing data = ' + str(end_training - start_training))
@@ -40,6 +40,8 @@ class modelSetup:
         similarities = []
         print('[+] Load model')
         model = Word2Vec.load('trainedModel/word2vec.model')
+        
+        # plot model
         vocab = list(model.wv.vocab)
         X = model[vocab]
         tsne = TSNE(n_components=2)
@@ -50,13 +52,14 @@ class modelSetup:
         ax.scatter(df['x'], df['y'])
         for word, pos in df.iterrows():
             ax.annotate(word, pos)
-
-        #plt.show()
+        
+        # show model in plot       
+        plt.show()
 
         print('     ..Done loading model\n')
 
         print(df)
         print(model.wv.most_similar('8',topn=3))
         
-t = modelSetup.dataManipulation()
-q = modelSetup.loadModel()
+# modelSetup.dataManipulation()
+modelSetup.loadModel()
